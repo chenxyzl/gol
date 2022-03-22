@@ -1,4 +1,4 @@
-package ifs_base
+package bif
 
 import "foundation/framework/component"
 

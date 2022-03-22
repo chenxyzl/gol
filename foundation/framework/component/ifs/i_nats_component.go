@@ -1,11 +1,11 @@
 package ifs
 
 import (
+	"foundation/framework/bif"
 	"foundation/framework/component"
-	ifs_base "foundation/framework/component/ifs/ifs.base"
 )
 
-func init() { _ = func(a INatsComponent) { _ = ifs_base.IComponent(a) } }
+func init() { _ = func(a INatsComponent) { _ = bif.IComponent(a) } }
 
 //RPCFunc 注册用的回掉函数
 type RPCFunc func(uid uint64, cmd uint32, b []byte) error

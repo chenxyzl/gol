@@ -1,7 +1,8 @@
 package home
 
 import (
-	"foundation/framework/actor"
+	"foundation/framework/base"
+	"foundation/framework/bif"
 	"foundation/framework/component/nats_component"
 	"foundation/framework/g"
 	"foundation/framework/message"
@@ -9,10 +10,10 @@ import (
 	"foundation/home/easyrpcimpl"
 )
 
-var _ actor.IActor = &RootActor{}
+var _ bif.IActor = &RootActor{}
 
 type RootActor struct {
-	actor.Actor
+	base.Actor
 }
 
 func NewActor(boxSize int32, maxRunningGoSize int32) *RootActor {

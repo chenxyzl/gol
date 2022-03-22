@@ -1,14 +1,15 @@
 package player
 
 import (
-	"foundation/framework/actor"
+	"foundation/framework/base"
+	"foundation/framework/bif"
 	"foundation/framework/message"
 )
 
-var _ actor.IActor = &PlayerActor{}
+var _ bif.IActor = &PlayerActor{}
 
 type PlayerActor struct {
-	actor.Actor
+	base.Actor
 }
 
 func (a *PlayerActor) Constructor(boxSize int32, maxRunningGoSize int32) {

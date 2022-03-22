@@ -1,7 +1,7 @@
 package framework
 
 import (
-	"foundation/framework/actor"
+	"foundation/framework/bif"
 	"foundation/framework/g"
 	"gitlab-ee.funplus.io/watcher/watcher/misc/wlog"
 	"os"
@@ -10,7 +10,7 @@ import (
 	"time"
 )
 
-func Run(actor actor.IActor) {
+func Run(actor bif.IActor) {
 	g.Root = actor
 	//加载db
 	wlog.Warn("stop begin...")

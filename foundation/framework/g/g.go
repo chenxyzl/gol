@@ -1,7 +1,7 @@
 package g
 
 import (
-	"foundation/framework/actor"
+	"foundation/framework/bif"
 	"foundation/framework/util"
 	"github.com/spf13/viper"
 )
@@ -27,7 +27,7 @@ var (
 	PProf              string       //pprof性能检测
 	EtcdAddr           string       //etcd地址
 
-	Root actor.IActor
+	Root bif.IActor
 	UUID *util.UUID
 )
 

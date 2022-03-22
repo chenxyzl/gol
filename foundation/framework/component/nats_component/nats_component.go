@@ -2,9 +2,9 @@ package nats_component
 
 import (
 	"fmt"
+	"foundation/framework/bif"
 	"foundation/framework/component"
 	"foundation/framework/component/ifs"
-	ifs_base "foundation/framework/component/ifs/ifs.base"
 	"foundation/framework/g"
 	"github.com/nats-io/nats.go"
 	"github.com/nats-io/nats.go/encoders/protobuf"
@@ -21,7 +21,7 @@ const (
 )
 
 type NatsComponent struct {
-	Node          ifs_base.IComponentNode
+	Node          bif.IActor
 	addr          string
 	enc           *nats.EncodedConn // NATS的Conn
 	dispatcherMap map[uint32]ifs.RPCFunc

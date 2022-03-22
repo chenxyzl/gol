@@ -1,4 +1,4 @@
-package actor
+package bif
 
 type IActorRef interface {
 	GetUid() uint64

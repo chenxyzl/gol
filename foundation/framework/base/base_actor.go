@@ -1,10 +1,10 @@
-package actor
+package base
 
 import (
 	"context"
 	"fmt"
+	"foundation/framework/bif"
 	"foundation/framework/component"
-	"foundation/framework/component/ifs/ifs.base"
 	"foundation/framework/message"
 	"golang.org/x/sync/semaphore"
 	"runtime"
@@ -17,10 +17,10 @@ const (
 	AsyncTimeOut = time.Duration(1000) * time.Millisecond
 )
 
-var _ = (IActor)(&Actor{})
+var _ = (bif.IActor)(&Actor{})
 
 type Actor struct {
-	IActor
+	bif.IActor
 	//线程调度相关
 	lock             *semaphore.Weighted
 	goNumLock        sync.Mutex
@@ -29,8 +29,8 @@ type Actor struct {
 	//邮箱
 	Boxs chan message.IMessage
 	//组件相关
-	components        []ifs_base.IComponent
-	componentsMapping map[component.ComType]ifs_base.IComponent //go的泛型太辣鸡了。暂时不用
+	components        []bif.IComponent
+	componentsMapping map[component.ComType]bif.IComponent //go的泛型太辣鸡了。暂时不用
 }
 
 func (actor *Actor) Constructor(boxSize int32, maxRunningGoSize int32) {
@@ -41,16 +41,16 @@ func (actor *Actor) Constructor(boxSize int32, maxRunningGoSize int32) {
 	actor.Boxs = make(chan message.IMessage, boxSize)
 	actor.maxRunningGoSize = maxRunningGoSize
 	//
-	actor.components = make([]ifs_base.IComponent, 0)
-	actor.componentsMapping = make(map[component.ComType]ifs_base.IComponent)
+	actor.components = make([]bif.IComponent, 0)
+	actor.componentsMapping = make(map[component.ComType]bif.IComponent)
 }
 
 //GetComponent 获取组件
-func (actor *Actor) GetComponent(comType component.ComType) ifs_base.IComponent {
+func (actor *Actor) GetComponent(comType component.ComType) bif.IComponent {
 	return actor.componentsMapping[comType]
 }
 
-func (actor *Actor) AddComponent(iComponent ifs_base.IComponent, params ...interface{}) {
+func (actor *Actor) AddComponent(iComponent bif.IComponent, params ...interface{}) {
 	//重复检查
 	if _, ok := actor.componentsMapping[iComponent.Name()]; ok {
 		panic(fmt.Sprintf("component name:%s repeated", iComponent.Name()))
@@ -163,13 +163,13 @@ func (actor *Actor) Destroy() {
 	}
 }
 
-func (actor *Actor) AsyncAsk(target IActorRef, msg *message.IMessage) *message.IMessage {
+func (actor *Actor) AsyncAsk(target bif.IActorRef, msg *message.IMessage) *message.IMessage {
 	//todo 更具一致性hash算法 找到对应的nodeId
 	//todo AsyncCall调用nats的request/reply来发起请求
 	return nil
 }
 
-func (actor *Actor) AsyncTell(target IActorRef, msg *message.IMessage) *message.IMessage {
+func (actor *Actor) AsyncTell(target bif.IActorRef, msg *message.IMessage) *message.IMessage {
 	//todo 更具一致性hash算法 找到对应的nodeId
 	//todo AsyncCall调用用nats的notify发送消息
 	return nil
