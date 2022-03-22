@@ -3,13 +3,13 @@
 package easyrpc
 
 import (
-	"foundation/home"
+	"foundation/home/player"
 	"foundation/message"
 )
 
 //RPCServicePlayer 玩家相关
 type RPCServicePlayer interface {
 	//Login //获得玩家数据
-	Login(player *home.PlayerActor, in *message.CS_Login) *message.SC_Login
-	GetSenderDelegate(uid uint64) *home.PlayerActor
+	Login(player *player.PlayerActor, in *message.CS_Login) *message.SC_Login
+	GetSenderDelegate(uid uint64) *player.PlayerActor
 }

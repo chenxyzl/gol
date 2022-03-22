@@ -1,4 +1,4 @@
-package home
+package player
 
 import (
 	"foundation/framework/actor"

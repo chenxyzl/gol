@@ -19,14 +19,14 @@ var (
 // Conn exposes a set of callbacks for the various events that occur on a connection
 type Conn struct {
 	srv               *Server
-	conn              net.Conn      // the raw connection
-	extraData         interface{}   // to save extra data
-	closeOnce         sync.Once     // close the conn, once, per instance
-	closeFlag         int32         // close flag
-	closeChan         chan struct{} // close chanel
-	packetSendChan    chan Packet   // packet send chanel
-	packetReceiveChan chan Packet   // packeet receive chanel
-	callback          ConnCallback  // callback
+	conn              net.Conn               // the raw connection
+	extraData         map[string]interface{} // to save extra data
+	closeOnce         sync.Once              // close the conn, once, per instance
+	closeFlag         int32                  // close flag
+	closeChan         chan struct{}          // close chanel
+	packetSendChan    chan Packet            // packet send chanel
+	packetReceiveChan chan Packet            // packeet receive chanel
+	callback          ConnCallback           // callback
 	sessionId         uint64
 }
 
@@ -58,13 +58,13 @@ func NewConn(conn net.Conn, srv *Server) *Conn {
 }
 
 // GetExtraData gets the extra data from the Conn
-func (c *Conn) GetExtraData() interface{} {
-	return c.extraData
+func (c *Conn) GetExtraData(str string) interface{} {
+	return c.extraData[str]
 }
 
 // PutExtraData puts the extra data with the Conn
-func (c *Conn) PutExtraData(data interface{}) {
-	c.extraData = data
+func (c *Conn) PutExtraData(str string, data interface{}) {
+	c.extraData[str] = data
 }
 
 // GetRawConn returns the raw net.TCPConn from the Conn
