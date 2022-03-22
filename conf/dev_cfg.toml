@@ -1,0 +1,37 @@
+[Global]
+Name = "foundation" #同一个集群名字需要一样,否则不能通信
+ConnReadTimeoutB = "300s"
+DebugMode = true
+
+[Version]
+kingdom = "1.5"
+client = "2.3"
+
+[PPROF]
+Addr = ":9789"
+
+[ETCD]
+Addr = "127.0.0.1:2379"
+
+[Log]
+LogFile = true
+LogProd = false
+LogTag  = ""
+LogLevel = "debug"
+ConditionLogLevel = "warn"
+#maxlognum = 30 #日志文件数量的最大值
+maxsizeofeachlogfile = 102400000 #单个日志文件的最大值
+#iswritelocal = 1 #日志是否写本地,1为写本地,0为不写
+isshowinconsole = true
+
+[Login]
+appServerSecret = "ikqsD2bY5tvju3WlN6MmCKApRcXQJeg97xGSL4aVOFE1nfPz0ZTHr8woIdyUBhk5" #登录验证ticket的私钥
+enableLoginAuth = false #是否开启登录认证
+localAuth       = true  #另一种模式是通过gmServer认证
+
+[Nats]
+User=""
+Pwd=""
+ReconnectWait=1 #单位秒
+MaxReconnects=-1 #重联次数
+Url="nats://127.0.0.1:4222,nats://127.0.0.1:4223,nats://127.0.0.1:4224"

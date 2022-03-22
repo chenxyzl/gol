@@ -1,0 +1,55 @@
+syntax = "proto3";
+//home相关
+import "code.proto";
+import "common.proto";
+option go_package = "/message";
+
+package message;
+
+//公共消息体，空请求,空回复，可拆分使用
+message CS_EmptyRequest {
+}
+message SC_EmptyReply {
+  CommonSyncData data = 1; //公共同步的数据
+}
+//公共消息题，同步数据给客户端
+message S_SyncData {
+  CommonSyncData data = 1; //公共同步的数据
+}
+
+//--------------------------------------------------------------------------------------------------通用回复数据
+message CommonSyncData {
+
+}
+
+//-------------------------------------------------------------------------------------玩家
+message CS_Ping{}
+message SC_Pong{}
+
+//请求玩家所有数据
+message CS_Login {
+  string token = 1;
+  uint64 extend = 2;
+}
+//返回玩家所有数据
+message SC_Login {
+  Player data = 1; //玩家数据
+}
+
+message UniqueItem{
+  uint64 id = 1; //唯一id
+  uint32 tid = 2; //模版id
+  uint64 count = 3; //数量
+  int64 expiredTime = 4; //过期时间
+}
+
+//玩家数据
+message Player {
+  uint64 uid = 1 [jstype = JS_STRING]; //id
+  string name = 2; //名字
+  uint32 rid = 3; //角色类型id
+
+  map<uint32, uint64> propBag = 20; //属性背包[如经验]
+  map<uint32, uint64> itemBag = 21; //道具背包[]
+  map<uint64, uint64> uniqueBag = 22; //唯一道具背包[如点券]
+}

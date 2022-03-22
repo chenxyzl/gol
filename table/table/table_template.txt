@@ -1,0 +1,146 @@
+package table
+
+import (
+	"errors"
+	"fmt"
+	"path"
+	"reflect"
+	"runtime/debug"
+
+	"war/framework/util"
+
+	l4g "github.com/ivanabc/log4go"
+)
+
+// $1Table 表格
+type $1Table struct {
+	file    string
+	DataMap map[$2]*$1
+	Data    []*$1
+	modTime int64
+}
+
+// load 加载
+func (table *$1Table) load() error {
+	l4g.Warn("[$1Table] load begin")
+
+	tData, err := util.LoadCSVConfig(path.Join(dataDir, table.file), reflect.TypeOf($1{}))
+	if err != nil {
+		return err
+	}
+
+	typeData := make([]*$1, len(tData))
+	for i, v := range tData {
+		typeV, ok := v.(*$1)
+		if !ok {
+			return errors.New("convert interface{} to struct eror")
+		}
+		typeData[i] = typeV
+	}
+
+	// if err := util.LoadJSONConfig(path.Join(dataDir,table.file), &table.Data); nil != err {
+	// 	return err
+	// }
+
+	table.Data = typeData
+	table.DataMap = make(map[$2]*$1, len(tData))
+	for _, v := range table.Data {
+		table.DataMap[v.$3] = v
+	}
+	table.modTime = GetFileModTime(path.Join(dataDir, table.file))
+
+	l4g.Warn("[$1Table] load success")
+	return nil
+}
+
+// reload 重新表格
+// 重新加载不会做减量，只做增量和改变
+func (table *$1Table) reload() error {
+	//检查是否需要
+	modTime := GetFileModTime(path.Join(dataDir, table.file))
+	if modTime != 0 && table.modTime == modTime {
+		return nil
+	}
+
+	l4g.Warn("[$1Table] reload begin")
+
+	//中间处理不可预料得错误一定要恢复回来
+	defer func() {
+		if err := recover(); nil != err {
+			l4g.Error("$1Table.reload] %s", debug.Stack())
+		}
+	}()
+
+	tData, err := util.LoadCSVConfig(path.Join(dataDir, table.file), reflect.TypeOf($1{}))
+	if err != nil {
+		return err
+	}
+
+	typeData := make([]*$1, len(tData))
+	for i, v := range tData {
+		typeV, ok := v.(*$1)
+		if !ok {
+			return errors.New("convert interface{} to struct eror")
+		}
+		typeData[i] = typeV
+	}
+
+	for _, v := range typeData {
+		//已有的要修改值，新增得直接增加
+		if data, ok := table.DataMap[v.$3]; ok {
+			util.DeepCopy(data, v)
+		} else {
+			table.DataMap[v.$3] = v
+			table.Data = append(table.Data, v)
+		}
+	}
+
+	l4g.Warn("[$1Table] reload success")
+
+	return nil
+}
+
+//GetFileName 获取table的文件名
+func (table *$1Table) GetFileName() string {
+	return table.file
+}
+
+// GetBy$3 根据$3查找
+func (table *$1Table) GetBy$3(val $2) *$1 {
+	v := table.DataMap[val]
+	return v
+}
+
+// GetCloneBy$3 根据$3查找克隆体(性能很差，慎用)
+func (table *$1Table) GetCloneBy$3(val $2) *$1 {
+	v := table.DataMap[val]
+	out := &$1{}
+	util.DeepCopy(out, v)
+	return out
+}
+
+// Count 总个数
+func (table *$1Table) Count() int {
+	return len(table.DataMap)
+}
+
+// $1TableCall 回调
+type $1TableCall func(*$1) bool
+
+// Foreach 总个数
+func (table *$1Table) Foreach(call $1TableCall) {
+	for _, v := range table.Data {
+		if call(v) {
+			break
+		}
+	}
+}
+
+// Dump 输出表内容
+func (table *$1Table) Dump() string {
+	s := ""
+	for k, v := range table.Data {
+		s = s + fmt.Sprintf("[%d] [%v]\n", k, *v)
+	}
+	return s
+}

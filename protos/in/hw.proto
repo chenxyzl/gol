@@ -1,0 +1,10 @@
+syntax = "proto3";
+
+package message;
+option go_package = "/message";
+
+message HW_Login{
+  uint64  uid = 1;
+}
+message WH_Login{
+}
