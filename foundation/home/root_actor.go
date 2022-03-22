@@ -5,6 +5,8 @@ import (
 	"foundation/framework/component/nats_component"
 	"foundation/framework/g"
 	"foundation/framework/message"
+	"foundation/home/easyrpc"
+	"foundation/home/easyrpcimpl"
 )
 
 var _ actor.IActor = &RootActor{}
@@ -17,11 +19,16 @@ func NewActor(boxSize int32, maxRunningGoSize int32) *RootActor {
 	actor := &RootActor{}
 	actor.Constructor(boxSize, maxRunningGoSize)
 	actor.RegisterComponent()
+	actor.Init()
 	return actor
 }
 
 func (actor *RootActor) RegisterComponent() {
 	actor.AddComponent(&nats_component.NatsComponent{}, g.GlobalConfig.GetString("Nats.Url"))
+}
+
+func (actor *RootActor) Init() {
+	easyrpc.RegisterPlayerService(&easyrpcimpl.PlayerRPCService{})
 }
 
 func (actor *RootActor) OnRecv(message message.IMessage) {

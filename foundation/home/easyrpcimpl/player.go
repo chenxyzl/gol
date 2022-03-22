@@ -9,8 +9,8 @@ import (
 type PlayerRPCService struct {
 }
 
-//RequestUserData 发送所有数据
-func (service *PlayerRPCService) Login(sender *home.PlayerActor, in *message.CS_Login) *message.SC_Login {
+//Login 发送所有数据
+func (service *PlayerRPCService) Login(player *home.PlayerActor, in *message.CS_Login) *message.SC_Login {
 	out := &message.SC_Login{}
 
 	return out

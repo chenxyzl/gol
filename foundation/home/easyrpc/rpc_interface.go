@@ -10,6 +10,6 @@ import (
 //RPCServicePlayer 玩家相关
 type RPCServicePlayer interface {
 	//Login //获得玩家数据
-	Login(sender *home.PlayerActor, in *message.CS_Login)
+	Login(player *home.PlayerActor, in *message.CS_Login) *message.SC_Login
 	GetSenderDelegate(uid uint64) *home.PlayerActor
 }
