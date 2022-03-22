@@ -20,4 +20,7 @@ type IActor interface {
 	//GetComponent 获取组件
 	GetComponent(comType component.ComType) IComponent
 	AddComponent(iComponent IComponent, params ...interface{})
+
+	//SafeAsyncDo 安全的异步执行一些事情～ 注意这里不要执行长耗时和异步操作
+	SafeAsyncDo(f func())
 }

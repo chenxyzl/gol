@@ -22,7 +22,7 @@ var _ = (bif.IActor)(&Actor{})
 type Actor struct {
 	bif.IActor
 	//线程调度相关
-	lock             *semaphore.Weighted
+	mux              *semaphore.Weighted
 	goNumLock        sync.Mutex
 	maxRunningGoSize int32 //size等于1就等同于单线程了
 	runningGoNum     int32
@@ -37,7 +37,7 @@ func (actor *Actor) Constructor(boxSize int32, maxRunningGoSize int32) {
 	if boxSize <= 0 {
 		panic("boxSize must bigger than 0")
 	}
-	actor.lock = semaphore.NewWeighted(int64(1))
+	actor.mux = semaphore.NewWeighted(int64(1))
 	actor.Boxs = make(chan message.IMessage, boxSize)
 	actor.maxRunningGoSize = maxRunningGoSize
 	//
@@ -63,13 +63,13 @@ func (actor *Actor) AddComponent(iComponent bif.IComponent, params ...interface{
 
 }
 
-func (actor *Actor) Lock() {
+func (actor *Actor) lock() {
 	ctx := context.Background()
-	actor.lock.Acquire(ctx, 1)
+	actor.mux.Acquire(ctx, 1)
 }
 
-func (actor *Actor) Unlock() {
-	actor.lock.Release(1)
+func (actor *Actor) release() {
+	actor.mux.Release(1)
 }
 
 func (actor *Actor) LockGoNum() {
@@ -80,37 +80,65 @@ func (actor *Actor) UnlockGoNum() {
 	actor.goNumLock.Unlock()
 }
 
+func (actor *Actor) asyncDo(message message.IMessage) {
+	actor.LockGoNum()
+	for {
+		//如果已达到上线则切换到别的go程
+		if actor.runningGoNum >= actor.maxRunningGoSize {
+			runtime.Gosched()
+		} else {
+			atomic.AddInt32(&actor.runningGoNum, 1)
+			break
+		}
+	}
+	actor.UnlockGoNum()
+	actor.lock()
+	go func() {
+		defer func() {
+			atomic.AddInt32(&actor.runningGoNum, -1)
+			actor.release()
+		}()
+		actor.OnRecv(message)
+	}()
+}
+
+//SafeAsyncDo 同步执行一些事情～ 注意这里不要执行长耗时和异步操作
+func (actor *Actor) SafeAsyncDo(f func()) {
+	actor.LockGoNum()
+	for {
+		//如果已达到上线则切换到别的go程
+		if actor.runningGoNum >= actor.maxRunningGoSize {
+			runtime.Gosched()
+		} else {
+			atomic.AddInt32(&actor.runningGoNum, 1)
+			break
+		}
+	}
+	actor.UnlockGoNum()
+	actor.lock()
+	go func() {
+		defer func() {
+			atomic.AddInt32(&actor.runningGoNum, -1)
+			actor.release()
+		}()
+		//
+		f()
+	}()
+}
+
 func (actor *Actor) BeginRecv() {
 	go func() {
 		for message := range actor.Boxs {
-			actor.LockGoNum()
-			for {
-				//如果已达到上线则切换到别的go程
-				if actor.runningGoNum >= actor.maxRunningGoSize {
-					runtime.Gosched()
-				} else {
-					atomic.AddInt32(&actor.runningGoNum, 1)
-					break
-				}
-			}
-			actor.UnlockGoNum()
-			actor.Lock()
-			go func() {
-				defer func() {
-					atomic.AddInt32(&actor.runningGoNum, -1)
-					actor.Unlock()
-				}()
-				actor.OnRecv(message)
-			}()
+			actor.asyncDo(message)
 		}
 	}()
 }
 
 // AsyncCall f内的代码不是线程安全的，通常这个函数为基础函数，不需要业务开发人员调用/
 func (actor *Actor) AsyncCall(f func()) {
-	actor.Unlock()
+	actor.release()
 	defer func() {
-		actor.Lock()
+		actor.lock()
 	}()
 
 	c := make(chan bool)
