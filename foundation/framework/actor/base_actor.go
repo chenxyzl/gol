@@ -56,7 +56,7 @@ func (actor *Actor) AddComponent(iComponent ifs_base.IComponent, params ...inter
 		panic(fmt.Sprintf("component name:%s repeated", iComponent.Name()))
 	}
 	//构造
-	iComponent.Constructor(params)
+	iComponent.Constructor(params...)
 	//
 	actor.components = append(actor.components, iComponent)
 	actor.componentsMapping[iComponent.Name()] = iComponent

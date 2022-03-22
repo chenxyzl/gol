@@ -34,4 +34,4 @@ User=""
 Pwd=""
 ReconnectWait=1 #单位秒
 MaxReconnects=-1 #重联次数
-Url="nats://127.0.0.1:4222,nats://127.0.0.1:4223,nats://127.0.0.1:4224"
+Url="nats://127.0.0.1:4222"

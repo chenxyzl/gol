@@ -2,6 +2,7 @@ package network
 
 import (
 	"errors"
+	"foundation/framework/g"
 	"net"
 	"sync"
 	"sync/atomic"
@@ -52,6 +53,7 @@ func NewConn(conn net.Conn, srv *Server) *Conn {
 		closeChan:         make(chan struct{}),
 		packetSendChan:    make(chan Packet, srv.config.PacketSendChanLimit),
 		packetReceiveChan: make(chan Packet, srv.config.PacketReceiveChanLimit),
+		sessionId:         g.UUID.Generate(),
 	}
 }
 
