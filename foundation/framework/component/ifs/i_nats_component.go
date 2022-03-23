@@ -3,12 +3,13 @@ package ifs
 import (
 	"foundation/framework/bif"
 	"foundation/framework/component"
+	"foundation/message"
 )
 
 func init() { _ = func(a INatsComponent) { _ = bif.IComponent(a) } }
 
 //RPCFunc 注册用的回掉函数
-type RPCFunc func(uid uint64, cmd uint32, b []byte) error
+type RPCFunc func(req *message.NatsRequest) error
 type INatsComponent interface {
 	Constructor(...interface{})
 	Name() component.ComType
@@ -18,4 +19,6 @@ type INatsComponent interface {
 	Stop()
 	Destroy()
 	RegisterEvent(cmd uint32, handler RPCFunc)
+	Dispatch(req *message.NatsRequest)
+	Reply(url string, reply *message.NatsReply)
 }

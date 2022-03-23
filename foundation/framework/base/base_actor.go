@@ -26,6 +26,7 @@ type Actor struct {
 	//组件相关
 	components        []bif.IComponent
 	componentsMapping map[component.ComType]bif.IComponent //go的泛型太辣鸡了。暂时不用
+	forceSync         bool                                 //加载和停止中强制走同步
 }
 
 func (actor *Actor) Constructor(boxSize int32, maxRunningGoSize int32) {
@@ -35,6 +36,8 @@ func (actor *Actor) Constructor(boxSize int32, maxRunningGoSize int32) {
 	actor.mux = semaphore.NewWeighted(int64(1))
 	actor.Boxs = make(chan message.IMessage, boxSize)
 	actor.maxRunningGoSize = maxRunningGoSize
+	//
+	actor.forceSync = true
 	//
 	actor.components = make([]bif.IComponent, 0)
 	actor.componentsMapping = make(map[component.ComType]bif.IComponent)
@@ -67,26 +70,33 @@ func (actor *Actor) release() {
 	actor.mux.Release(1)
 }
 
-func (actor *Actor) LockGoNum() {
+func (actor *Actor) lockGoNum() {
 	actor.goNumLock.Lock()
 }
 
-func (actor *Actor) UnlockGoNum() {
+func (actor *Actor) unlockGoNum() {
 	actor.goNumLock.Unlock()
 }
 
-func (actor *Actor) asyncDo(message message.IMessage) {
-	actor.LockGoNum()
+func (actor *Actor) checkGoNum() {
+	actor.lockGoNum()
 	for {
 		//如果已达到上线则切换到别的go程
-		if actor.runningGoNum >= actor.maxRunningGoSize {
+		if actor.runningGoNum >= actor.maxRunningGoSize ||
+			actor.forceSync && actor.runningGoNum > 0 {
 			runtime.Gosched()
 		} else {
 			atomic.AddInt32(&actor.runningGoNum, 1)
 			break
 		}
 	}
-	actor.UnlockGoNum()
+	actor.unlockGoNum()
+}
+
+func (actor *Actor) asyncDo(message message.IMessage) {
+	//检查go程序
+	actor.checkGoNum()
+	//执行异步代码
 	actor.lock()
 	go func() {
 		defer func() {
@@ -99,17 +109,9 @@ func (actor *Actor) asyncDo(message message.IMessage) {
 
 //SafeAsyncDo 同步执行一些事情～ 注意这里不要执行长耗时和异步操作
 func (actor *Actor) SafeAsyncDo(f func()) {
-	actor.LockGoNum()
-	for {
-		//如果已达到上线则切换到别的go程
-		if actor.runningGoNum >= actor.maxRunningGoSize {
-			runtime.Gosched()
-		} else {
-			atomic.AddInt32(&actor.runningGoNum, 1)
-			break
-		}
-	}
-	actor.UnlockGoNum()
+	//检查go程序
+	actor.checkGoNum()
+	//执行异步代码
 	actor.lock()
 	go func() {
 		defer func() {
@@ -119,6 +121,10 @@ func (actor *Actor) SafeAsyncDo(f func()) {
 		//
 		f()
 	}()
+}
+
+func (actor *Actor) AddMessage(message message.IMessage) {
+	actor.Boxs <- message
 }
 
 func (actor *Actor) BeginRecv() {
@@ -134,6 +140,8 @@ func (actor *Actor) Load() {
 	for _, com := range actor.components {
 		com.Load()
 	}
+	//
+	actor.forceSync = false
 }
 
 //Start 生命周期函数
@@ -152,6 +160,7 @@ func (actor *Actor) Tick(time int64) {
 
 //Stop 生命周期函数
 func (actor *Actor) Stop() {
+	actor.forceSync = true
 	for _, com := range actor.components {
 		com.Stop()
 	}

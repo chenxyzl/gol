@@ -3,10 +3,3 @@ import "code.proto";
 
 package message;
 option go_package = "/message";
-
-
-enum InID {
-  None = 0;
-  Login = 1000;
-  MAX = 9999;
-}

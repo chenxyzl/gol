@@ -1,4 +1,4 @@
-package easyrpcimpl
+package playerrpcimpl
 
 import (
 	"foundation/home/player"
@@ -14,8 +14,4 @@ func (service *PlayerRPCService) Login(player *player.PlayerActor, in *message.C
 	out := &message.SC_Login{}
 
 	return out
-}
-
-func (service *PlayerRPCService) GetSenderDelegate(uid uint64) *player.PlayerActor {
-	return nil
 }

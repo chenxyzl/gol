@@ -6,6 +6,8 @@ import (
 	"foundation/framework/component"
 	"foundation/framework/component/ifs"
 	"foundation/framework/g"
+	message2 "foundation/message"
+	"github.com/golang/protobuf/proto"
 	"github.com/nats-io/nats.go"
 	"github.com/nats-io/nats.go/encoders/protobuf"
 	"gitlab-ee.funplus.io/watcher/watcher/misc/wlog"
@@ -21,10 +23,11 @@ const (
 )
 
 type NatsComponent struct {
-	Node          bif.IActor
-	addr          string
-	enc           *nats.EncodedConn // NATS的Conn
-	dispatcherMap map[uint32]ifs.RPCFunc
+	Node            bif.IActor
+	addr            string
+	enc             *nats.EncodedConn // NATS的Conn
+	dispatcherMap   map[uint32]ifs.RPCFunc
+	subscriberTopic string // 订阅路径
 }
 
 func (c *NatsComponent) Constructor(args ...interface{}) {
@@ -42,9 +45,6 @@ func (c *NatsComponent) Name() component.ComType {
 	return component.NatsCom
 }
 func (c *NatsComponent) Load() {
-
-}
-func (c *NatsComponent) Start() {
 	name := fmt.Sprintf("%v-%v", g.RoleTyp(), g.Id())
 	// 设置参数
 	opts := make([]nats.Option, 0)
@@ -86,7 +86,9 @@ func (c *NatsComponent) Start() {
 		panic(err1)
 	}
 	c.enc = enc
-	c.GoLoop()
+}
+func (c *NatsComponent) Start() {
+	c.RegisterSubscriberSelf()
 }
 func (c *NatsComponent) Tick(int64 int64) {
 
@@ -99,8 +101,17 @@ func (c *NatsComponent) Destroy() {
 
 }
 
-func (c *NatsComponent) GoLoop() {
-
+func (c *NatsComponent) RegisterSubscriberSelf() {
+	c.enc.Subscribe(fmt.Sprintf("%s.%d", g.RoleTyp(), g.Id()), func(msg *nats.Msg) {
+		m := &message2.NatsRequest{}
+		err := proto.Unmarshal(msg.Data, m)
+		if err != nil {
+			wlog.Error("proto unmarshal error")
+		} else {
+			//分发到对应的
+			c.Node.AddMessage(m)
+		}
+	})
 }
 
 func (c *NatsComponent) RegisterEvent(cmd uint32, handler ifs.RPCFunc) {
@@ -110,30 +121,36 @@ func (c *NatsComponent) RegisterEvent(cmd uint32, handler ifs.RPCFunc) {
 	c.dispatcherMap[cmd] = handler
 }
 
+func (c *NatsComponent) Reply(url string, rep *message2.NatsReply) {
+	c.enc.Publish(url, rep)
+}
+
 //Dispatch 消息分发
-func (c *NatsComponent) Dispatch(uid uint64, cmd uint32, b []byte) error {
+func (c *NatsComponent) Dispatch(req *message2.NatsRequest) {
 	start := time.Now()
-	wlog.Debug("[NatsComponent] Dispatch uid=[%d], cmd=[%d]", uid, cmd)
+	wlog.Debugf("[NatsComponent] Dispatch uid=[%d], cmd=[%d]", req.Uid, req.Cmd)
 
 	// 是否recover
 	defer func() {
 		err := recover()
 		if nil != err {
 			trace := string(debug.Stack())
-			fmt.Println("panic:", uid, cmd, err, trace)
-			wlog.Error("[NatsComponent] Dispatch uid=[%d] cmd=[%d] panic(%v) stack:%s", uid, cmd, err, trace)
+			fmt.Println("panic:", req.Uid, req.Cmd, err, trace)
+			wlog.Errorf("[NatsComponent] Dispatch uid=[%d] cmd=[%d] panic(%v) stack:%s", req.Uid, req.Cmd, err, trace)
 		}
 	}()
 
-	f, ok := c.dispatcherMap[cmd]
+	f, ok := c.dispatcherMap[req.Cmd]
 	if !ok {
-		return fmt.Errorf("[NatsComponent] no handler[%d]", cmd)
+		wlog.Errorf("[NatsComponent] no handler[%d]", req.Cmd)
 	}
 
-	err := f(uid, cmd, b)
+	err := f(req)
 	span := time.Since(start)
 	if span > slowTime {
-		wlog.Error("[NatsComponent] Dispatch slow uid[%d] cmd[%d] execute_time[%d(ms)]", uid, cmd, span.Milliseconds())
+		wlog.Errorf("[NatsComponent] Dispatch slow uid[%d] cmd[%d] execute_time[%d(ms)]", req.Uid, req.Cmd, span.Milliseconds())
 	}
-	return err
+	if err != nil {
+		wlog.Error(err)
+	}
 }

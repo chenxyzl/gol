@@ -15,6 +15,7 @@ type IActor interface {
 	Tick(int642 int64)
 	Stop()
 	Destroy()
+	AddMessage(message message.IMessage)
 	OnRecv(message message.IMessage)
 
 	//GetComponent 获取组件
