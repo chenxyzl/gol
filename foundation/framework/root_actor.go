@@ -13,13 +13,13 @@ import (
 func Run(actor bif.IActor) {
 	g.Root = actor
 	//加载db
-	wlog.Warn("stop begin...")
+	wlog.Warn("load begin...")
 	actor.Load()
-	wlog.Warn("stop complete...")
+	wlog.Warn("load complete...")
 	//开始
-	wlog.Warn("stop begin...")
+	wlog.Warn("start begin...")
 	actor.Start()
-	wlog.Warn("stop complete...")
+	wlog.Warn("start complete...")
 	//退出信号
 	sigterm := make(chan os.Signal, 1)
 	signal.Notify(sigterm, syscall.SIGINT, syscall.SIGTERM)

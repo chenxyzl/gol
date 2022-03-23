@@ -10,11 +10,6 @@ import (
 	"runtime"
 	"sync"
 	"sync/atomic"
-	"time"
-)
-
-const (
-	AsyncTimeOut = time.Duration(1000) * time.Millisecond
 )
 
 var _ = (bif.IActor)(&Actor{})
@@ -132,28 +127,6 @@ func (actor *Actor) BeginRecv() {
 			actor.asyncDo(message)
 		}
 	}()
-}
-
-// AsyncCall f内的代码不是线程安全的，通常这个函数为基础函数，不需要业务开发人员调用/
-func (actor *Actor) AsyncCall(f func()) {
-	actor.release()
-	defer func() {
-		actor.lock()
-	}()
-
-	c := make(chan bool)
-
-	timeoutTimer := time.After(AsyncTimeOut)
-	go func() {
-		f()
-		c <- true
-	}()
-	select {
-	case <-timeoutTimer:
-		return
-	case <-c:
-		return
-	}
 }
 
 //Load 生命周期函数
