@@ -3,11 +3,11 @@
 package playerrpc
 
 import (
-	"fmt"
 	"foundation/framework/component"
 	"foundation/framework/component/ifs"
 	"foundation/framework/g"
 	"foundation/message"
+	"gitlab-ee.funplus.io/watcher/watcher/misc/wlog"
 
 	"github.com/golang/protobuf/proto"
 )
@@ -17,20 +17,23 @@ func RegisterPlayerService(service RPCServicePlayer) {
 	//Login 登录
 	c := g.Root.GetComponent(component.NatsCom).(ifs.INatsComponent)
 	c.RegisterEvent(20000,
-		func(req *message.NatsRequest) error {
+		func(req *message.NatsRequest) message.Code {
 			a := GetPlayer(req.Uid)
 			if nil == a {
-				return fmt.Errorf("no found user =%d, cmd =%d", req.Uid, req.Cmd)
+				wlog.Errorf("no found actor =%d, cmd =%d", req.Uid, req.Cmd)
+				return message.ActorNoFound
 			}
 			in := &message.CS_Login{}
 			err := proto.Unmarshal(req.Data, in)
 			if err != nil {
-				return fmt.Errorf("message.CS_Login Unmarshal error: %s", err.Error())
+				wlog.Errorf("message.CS_Login Unmarshal error: %s", err.Error())
+				return message.NatsRequestUnmarshalError
 			}
 			r := service.Login(a, in)
 			data, e := proto.Marshal(r)
 			if e != nil {
-				return fmt.Errorf("message.SC_Login Unmarshal error:%s", e.Error())
+				wlog.Errorf("message.SC_Login Unmarshal error:%s", e.Error())
+				return message.NatsReplyUnmarshalError
 			}
 			rep := &message.NatsReply{
 				Uid:  req.Uid,
@@ -39,6 +42,6 @@ func RegisterPlayerService(service RPCServicePlayer) {
 				Code: message.Code_OK,
 			}
 			c.Reply(req.ReplayUrl, rep)
-			return nil
-		})
+			return message.Code_OK
+		}, true)
 }
