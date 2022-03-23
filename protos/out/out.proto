@@ -2,9 +2,3 @@ syntax = "proto3";
 
 package message;
 option go_package = "/message";
-
-enum OutID {
-  NONE = 0;
-  Login = 10000;
-  MAX = 19999;
-}

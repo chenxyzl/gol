@@ -1,0 +1,21 @@
+syntax = "proto3";
+
+package message;
+option go_package = "/message";
+//错误码
+enum CMD {
+  None = 0;
+  //内部rpc 10000～19999
+
+  //外部rpc 20000～29999
+  //最小
+  OMin = 20000;
+  //
+  Ping = 20001;
+  Login = 20002;
+  Offline = 20003;
+  Kick = 20004;
+
+  //最大
+  OMax = 29999;
+}

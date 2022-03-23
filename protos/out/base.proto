@@ -8,13 +8,11 @@ message Request {
   uint32 sn = 1; //流水号
   uint32 cmd = 2; //rpc的id
   bytes data = 3; //数据 //第一个消息必须是登录。gate会保存里面的uid
-  uint64 extend = 4; //服务器填充字段-uid
 }
 
-message Reply { //push公用
+message Reply {//push公用
   uint32 sn = 1; //流水号
   uint32 cmd = 2; //rpc的id
   bytes  data = 3; //数据
-  uint64 extend = 4; //服务器填充字段-session
-  Code code = 5; //错误码
+  Code code = 4; //错误码
 }

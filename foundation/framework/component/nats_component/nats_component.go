@@ -170,7 +170,7 @@ func (c *NatsComponent) dispatchReplyHandler(f ifs.RPCFunc, req *message2.NatsRe
 			trace := string(debug.Stack())
 			println("panic:", req.Uid, req.Cmd, err, trace)
 			wlog.Errorf("[NatsComponent.dispatchReplyHandler] Dispatch uid=[%d] cmd=[%d] panic(%v) stack:%s", req.Uid, req.Cmd, err, trace)
-			code = message2.UnknownError
+			code = message2.Code_UnknownError
 		}
 		//如果有错误则返回给目标url--这个url是临时的，不存在重复消费的情况
 		if code != message2.Code_OK {
@@ -198,7 +198,7 @@ func (c *NatsComponent) dispatchNoReplyHandler(f ifs.RPCFunc, req *message2.Nats
 			trace := string(debug.Stack())
 			println("panic:", req.Uid, req.Cmd, err, trace)
 			wlog.Errorf("[NatsComponent.dispatchNoReplyHandler] Dispatch uid=[%d] cmd=[%d] panic(%v) stack:%s", req.Uid, req.Cmd, err, trace)
-			code = message2.UnknownError
+			code = message2.Code_UnknownError
 		}
 		if code != message2.Code_OK {
 			wlog.Debugf("[NatsComponent.dispatchNoReplyHandler] uid:[%d] cmd:[%d] reply error:[%d]", code)

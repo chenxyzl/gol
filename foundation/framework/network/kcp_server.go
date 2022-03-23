@@ -7,10 +7,10 @@ import (
 )
 
 //StartKcpServer 启动kcp服务器 通常使用默认配置就可以了(也就是dupConfig=nil)
-func StartKcpServer(addr string, callback ConnCallback, protocol Protocol, dupConfig *Config) (*Server, error) {
+func StartKcpServer(addr string, callback ConnCallback, protocol Protocol, defaultConfig *Config) (*Server, error) {
 	//默认配置
-	if dupConfig == nil {
-		dupConfig = &Config{
+	if defaultConfig == nil {
+		defaultConfig = &Config{
 			PacketReceiveChanLimit: 1024,
 			PacketSendChanLimit:    1024,
 			ConnReadTimeout:        time.Second * 180,
@@ -23,7 +23,7 @@ func StartKcpServer(addr string, callback ConnCallback, protocol Protocol, dupCo
 		return nil, err
 	}
 
-	server := NewServer(dupConfig, callback, protocol)
+	server := NewServer(defaultConfig, callback, protocol)
 	go server.Start(l, func(conn net.Conn, i *Server) *Conn {
 
 		/*

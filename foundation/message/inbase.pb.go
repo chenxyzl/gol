@@ -28,7 +28,7 @@ type NatsRequest struct {
 	Uid       uint64 `protobuf:"varint,1,opt,name=uid,proto3" json:"uid,omitempty"`            //entityId
 	Cmd       uint32 `protobuf:"varint,2,opt,name=cmd,proto3" json:"cmd,omitempty"`            //rpc的id
 	Data      []byte `protobuf:"bytes,3,opt,name=data,proto3" json:"data,omitempty"`           //数据 //第一个消息必须是登录。gate会保存里面的uid
-	ReplayUrl string `protobuf:"bytes,4,opt,name=replayUrl,proto3" json:"replayUrl,omitempty"` //rpc返回的url
+	ReplayUrl string `protobuf:"bytes,4,opt,name=replayUrl,proto3" json:"replayUrl,omitempty"` //rpc返回的url-自动填充-不需要设置
 }
 
 func (x *NatsRequest) Reset() {

@@ -29,8 +29,7 @@ func (t *testCallback) OnMessage(conn *Conn, msg Packet) bool {
 }
 
 func (t *testCallback) OnConnect(conn *Conn) bool {
-	id := atomic.AddUint32(&t.numConn, 1)
-	conn.PutExtraData(id)
+	atomic.AddUint32(&t.numConn, 1)
 	//fmt.Println("OnConnect", conn.GetExtraData())
 	return true
 }

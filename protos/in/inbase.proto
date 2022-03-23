@@ -9,7 +9,7 @@ message NatsRequest {
   uint64 uid = 1; //entityId
   uint32 cmd = 2; //rpc的id
   bytes data = 3; //数据 //第一个消息必须是登录。gate会保存里面的uid
-  string replayUrl = 4; //rpc返回的url
+  string replayUrl = 4; //rpc返回的url-自动填充-不需要设置
 }
 
 message NatsReply {

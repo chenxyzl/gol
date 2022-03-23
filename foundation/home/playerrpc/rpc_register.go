@@ -21,19 +21,19 @@ func RegisterPlayerService(service RPCServicePlayer) {
 			a := GetPlayer(req.Uid)
 			if nil == a {
 				wlog.Errorf("no found actor =%d, cmd =%d", req.Uid, req.Cmd)
-				return message.ActorNoFound
+				return message.Code_ActorNoFound
 			}
 			in := &message.CS_Login{}
 			err := proto.Unmarshal(req.Data, in)
 			if err != nil {
 				wlog.Errorf("message.CS_Login Unmarshal error: %s", err.Error())
-				return message.NatsRequestUnmarshalError
+				return message.Code_NatsRequestUnmarshalError
 			}
 			r := service.Login(a, in)
 			data, e := proto.Marshal(r)
 			if e != nil {
 				wlog.Errorf("message.SC_Login Unmarshal error:%s", e.Error())
-				return message.NatsReplyUnmarshalError
+				return message.Code_NatsReplyUnmarshalError
 			}
 			rep := &message.NatsReply{
 				Uid:  req.Uid,

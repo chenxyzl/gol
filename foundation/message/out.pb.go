@@ -10,7 +10,6 @@ import (
 	protoreflect "google.golang.org/protobuf/reflect/protoreflect"
 	protoimpl "google.golang.org/protobuf/runtime/protoimpl"
 	reflect "reflect"
-	sync "sync"
 )
 
 const (
@@ -20,82 +19,15 @@ const (
 	_ = protoimpl.EnforceVersion(protoimpl.MaxVersion - 20)
 )
 
-type OutID int32
-
-const (
-	OutID_NONE  OutID = 0
-	OutID_Login OutID = 10000
-	OutID_MAX   OutID = 19999
-)
-
-// Enum value maps for OutID.
-var (
-	OutID_name = map[int32]string{
-		0:     "NONE",
-		10000: "Login",
-		19999: "MAX",
-	}
-	OutID_value = map[string]int32{
-		"NONE":  0,
-		"Login": 10000,
-		"MAX":   19999,
-	}
-)
-
-func (x OutID) Enum() *OutID {
-	p := new(OutID)
-	*p = x
-	return p
-}
-
-func (x OutID) String() string {
-	return protoimpl.X.EnumStringOf(x.Descriptor(), protoreflect.EnumNumber(x))
-}
-
-func (OutID) Descriptor() protoreflect.EnumDescriptor {
-	return file_out_proto_enumTypes[0].Descriptor()
-}
-
-func (OutID) Type() protoreflect.EnumType {
-	return &file_out_proto_enumTypes[0]
-}
-
-func (x OutID) Number() protoreflect.EnumNumber {
-	return protoreflect.EnumNumber(x)
-}
-
-// Deprecated: Use OutID.Descriptor instead.
-func (OutID) EnumDescriptor() ([]byte, []int) {
-	return file_out_proto_rawDescGZIP(), []int{0}
-}
-
 var File_out_proto protoreflect.FileDescriptor
 
 var file_out_proto_rawDesc = []byte{
 	0x0a, 0x09, 0x6f, 0x75, 0x74, 0x2e, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x12, 0x07, 0x6d, 0x65, 0x73,
-	0x73, 0x61, 0x67, 0x65, 0x2a, 0x28, 0x0a, 0x05, 0x4f, 0x75, 0x74, 0x49, 0x44, 0x12, 0x08, 0x0a,
-	0x04, 0x4e, 0x4f, 0x4e, 0x45, 0x10, 0x00, 0x12, 0x0a, 0x0a, 0x05, 0x4c, 0x6f, 0x67, 0x69, 0x6e,
-	0x10, 0x90, 0x4e, 0x12, 0x09, 0x0a, 0x03, 0x4d, 0x41, 0x58, 0x10, 0x9f, 0x9c, 0x01, 0x42, 0x0a,
-	0x5a, 0x08, 0x2f, 0x6d, 0x65, 0x73, 0x73, 0x61, 0x67, 0x65, 0x62, 0x06, 0x70, 0x72, 0x6f, 0x74,
-	0x6f, 0x33,
+	0x73, 0x61, 0x67, 0x65, 0x42, 0x0a, 0x5a, 0x08, 0x2f, 0x6d, 0x65, 0x73, 0x73, 0x61, 0x67, 0x65,
+	0x62, 0x06, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x33,
 }
 
-var (
-	file_out_proto_rawDescOnce sync.Once
-	file_out_proto_rawDescData = file_out_proto_rawDesc
-)
-
-func file_out_proto_rawDescGZIP() []byte {
-	file_out_proto_rawDescOnce.Do(func() {
-		file_out_proto_rawDescData = protoimpl.X.CompressGZIP(file_out_proto_rawDescData)
-	})
-	return file_out_proto_rawDescData
-}
-
-var file_out_proto_enumTypes = make([]protoimpl.EnumInfo, 1)
-var file_out_proto_goTypes = []interface{}{
-	(OutID)(0), // 0: message.OutID
-}
+var file_out_proto_goTypes = []interface{}{}
 var file_out_proto_depIdxs = []int32{
 	0, // [0:0] is the sub-list for method output_type
 	0, // [0:0] is the sub-list for method input_type
@@ -114,14 +46,13 @@ func file_out_proto_init() {
 		File: protoimpl.DescBuilder{
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: file_out_proto_rawDesc,
-			NumEnums:      1,
+			NumEnums:      0,
 			NumMessages:   0,
 			NumExtensions: 0,
 			NumServices:   0,
 		},
 		GoTypes:           file_out_proto_goTypes,
 		DependencyIndexes: file_out_proto_depIdxs,
-		EnumInfos:         file_out_proto_enumTypes,
 	}.Build()
 	File_out_proto = out.File
 	file_out_proto_rawDesc = nil
