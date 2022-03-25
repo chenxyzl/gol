@@ -9,6 +9,7 @@ import (
 	"foundation/framework/g"
 	"foundation/message"
 	"github.com/golang/protobuf/proto"
+	"gitlab-ee.funplus.io/watcher/watcher/misc/wlog"
 	"golang.org/x/sync/semaphore"
 	"runtime"
 	"sync"
@@ -183,19 +184,26 @@ func (actor *Actor) To() *message.ActorRef {
 	}
 }
 
-func (actor *Actor) AsyncAsk(target message.IActorRef, cmd message.CMD, msg proto.Message) (proto.Message, message.Code) {
+func (actor *Actor) AsyncAsk(target message.IActorRef, cmd message.CMD, msg proto.Message, out proto.Message) message.Code {
 	nats := g.Root.GetComponent(component.NatsCom).(ifs.INatsComponent)
 	data, err := proto.Marshal(msg)
 	if err != nil {
-		return nil, message.Code_MarshalError
+		return message.Code_MarshalError
 	}
 	req := &message.NatsRequest{
 		ActorRef: target.To(),
 		Cmd:      uint32(cmd),
 		Data:     data,
 	}
-	rep, code := nats.Ask(req)
-	return rep, code
+	rep := nats.Ask(req)
+	if rep.Code == message.Code_OK {
+		err := proto.Unmarshal(rep.Data, out)
+		if err != nil {
+			wlog.Error("[Actor].AsyncAsk unmarshal error:[%v]", err)
+			rep.Code = message.Code_NatsReplyUnmarshalError
+		}
+	}
+	return rep.Code
 }
 
 func (actor *Actor) AsyncTell(target message.IActorRef, cmd message.CMD, msg proto.Message) message.Code {

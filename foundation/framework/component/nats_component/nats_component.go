@@ -19,7 +19,8 @@ var _ ifs.INatsComponent = &NatsComponent{}
 
 //rpc单次执行时间
 const (
-	slowTime = time.Millisecond * 20
+	slowTime   = time.Millisecond * 20
+	rpcTimeout = time.Second
 )
 
 type NatsComponent struct {
@@ -187,10 +188,10 @@ func (c *NatsComponent) dispatchReplyHandler(f ifs.RPCFunc, req *message2.NatsRe
 		if code != message2.Code_OK {
 			wlog.Debugf("[NatsComponent.dispatchReplyHandler] uid:[%d] cmd:[%d] reply error:[%d]", code)
 			rep := &message2.NatsReply{
-				ActorRef:  req.ActorRef,
-				Cmd:  req.Cmd,
-				Data: nil,
-				Code: code,
+				ActorRef: req.ActorRef,
+				Cmd:      req.Cmd,
+				Data:     nil,
+				Code:     code,
 			}
 			c.Reply(req.ReplayUrl, rep)
 		}
@@ -221,19 +222,34 @@ func (c *NatsComponent) dispatchNoReplyHandler(f ifs.RPCFunc, req *message2.Nats
 	//log
 }
 
-func (c *NatsComponent) Ask(req *message2.NatsRequest) (*message2.NatsReply, message2.Code) {
+func (c *NatsComponent) Ask(req *message2.NatsRequest) *message2.NatsReply {
 	//todo 更具一致性hash算法 找到对应的nodeId
 	//todo AsyncCall调用nats的request/reply来发起请求
+	reply := make(chan *message2.NatsReply)
 	c.Node.SafeAsyncDo(func() {
-		//c.enc.Request()
+		out := &message2.NatsReply{}
+		err := c.enc.Request(req.GetTopic(), req, out, rpcTimeout)
+		if err != nil {
+			wlog.Errorf("[NatsComponent.Ask] err:%v", err)
+			out.Code = message2.Code_NatsRpcError
+		}
+		reply <- out
 	})
-	return nil, message2.Code_OK
+	//会卡住当前线程-不用担心-上面的异步代码会让出actor的所有权，让别的线程来执行
+	//一定会有回调，哪怕是超时
+	rep := <-reply
+	return rep
 }
 func (c *NatsComponent) Tell(req *message2.NatsRequest) message2.Code {
 	//todo 更具一致性hash算法 找到对应的nodeId
 	//todo AsyncCall调用用nats的notify发送消息
+	code := make(chan message2.Code)
 	c.Node.SafeAsyncDo(func() {
-		//c.enc.Publish()
+		err := c.enc.Publish(req.GetTopic(), req)
+		if err != nil {
+			wlog.Errorf("[NatsComponent.Tell] err:%v", err)
+			code <- message2.Code_NatsRpcError
+		}
 	})
-	return message2.Code_OK
+	return <-code
 }

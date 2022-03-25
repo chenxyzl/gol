@@ -22,6 +22,6 @@ type INatsComponent interface {
 	Dispatch(req *message.NatsRequest)
 	Reply(url string, reply *message.NatsReply)
 	RegisterSubscriber(str string) error
-	Ask(req *message.NatsRequest) (*message.NatsReply, message.Code)
+	Ask(req *message.NatsRequest) *message.NatsReply
 	Tell(req *message.NatsRequest) message.Code
 }

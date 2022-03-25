@@ -6,10 +6,11 @@ const (
 	Code_UnknownError              Code = 100
 	Code_NasRpcNotRegister         Code = 101
 	Code_ActorNoFound              Code = 102
-	Code_NatsRequestUnmarshalError Code = 103
-	Code_NatsReplyUnmarshalError   Code = 104
-	Code_MarshalError              Code = 105
-	Code_UnmarshalError            Code = 106
+	Code_NatsRpcError              Code = 103
+	Code_NatsRequestUnmarshalError Code = 104
+	Code_NatsReplyUnmarshalError   Code = 105
+	Code_MarshalError              Code = 106
+	Code_UnmarshalError            Code = 107
 )
 
 func init() {
@@ -19,6 +20,10 @@ func init() {
 
 	Code_name[int32(Code_ActorNoFound)] = "ActorNoFound"
 	Code_value["ActorNoFound"] = int32(Code_ActorNoFound)
+
+
+	Code_name[int32(Code_NatsRpcError)] = "NatsRpcError"
+	Code_value["NatsRpcError"] = int32(Code_NatsRpcError)
 
 	Code_name[int32(Code_NatsRequestUnmarshalError)] = "NatsRequestUnmarshalError"
 	Code_value["NatsRequestUnmarshalError"] = int32(Code_NatsRequestUnmarshalError)
