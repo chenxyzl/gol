@@ -4,7 +4,7 @@
 // 	protoc        v3.19.4
 // source: cl.proto
 
-//http协议
+//登录服～http协议
 
 package message
 

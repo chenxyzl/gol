@@ -1,19 +1,28 @@
 syntax = "proto3";
 import "code.proto";
+import "common.proto";
 
 package message;
 option go_package = "/message";
 
+enum ActorType {
+  none = 0; //占位
+}
+
+message ActorRef {
+  uint64 uid = 1; //entityId
+  ActorType type = 2; //entityType
+}
 
 message NatsRequest {
-  uint64 uid = 1; //entityId
+  ActorRef actorRef = 1; //目标
   uint32 cmd = 2; //rpc的id
   bytes data = 3; //数据 //第一个消息必须是登录。gate会保存里面的uid
   string replayUrl = 4; //rpc返回的url-自动填充-不需要设置
 }
 
 message NatsReply {
-  uint64 uid = 1; //entityId
+  ActorRef actorRef = 1; //目标
   uint32 cmd = 2; //rpc的id
   bytes  data = 3; //数据
   Code code = 5; //错误码

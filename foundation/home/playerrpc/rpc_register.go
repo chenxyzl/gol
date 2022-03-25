@@ -18,9 +18,9 @@ func RegisterPlayerService(service RPCServicePlayer) {
 	c := g.Root.GetComponent(component.NatsCom).(ifs.INatsComponent)
 	c.RegisterEvent(20000,
 		func(req *message.NatsRequest) message.Code {
-			a := GetPlayer(req.Uid)
+			a := GetPlayer(req.GetUid())
 			if nil == a {
-				wlog.Errorf("no found actor =%d, cmd =%d", req.Uid, req.Cmd)
+				wlog.Errorf("no found actor =%d, cmd =%d", req.GetUid(), req.Cmd)
 				return message.Code_ActorNoFound
 			}
 			in := &message.CS_Login{}
@@ -36,10 +36,10 @@ func RegisterPlayerService(service RPCServicePlayer) {
 				return message.Code_NatsReplyUnmarshalError
 			}
 			rep := &message.NatsReply{
-				Uid:  req.Uid,
-				Cmd:  req.Cmd,
-				Data: data,
-				Code: message.Code_OK,
+				ActorRef: req.ActorRef,
+				Cmd:      req.Cmd,
+				Data:     data,
+				Code:     message.Code_OK,
 			}
 			c.Reply(req.ReplayUrl, rep)
 			return message.Code_OK

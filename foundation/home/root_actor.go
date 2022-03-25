@@ -7,7 +7,6 @@ import (
 	"foundation/framework/component/ifs"
 	"foundation/framework/component/nats_component"
 	"foundation/framework/g"
-	"foundation/framework/message"
 	"foundation/home/playerrpc"
 	"foundation/home/playerrpcimpl"
 	message2 "foundation/message"
@@ -44,7 +43,7 @@ func (actor *RootActor) Load() {
 	//再调用rpc注册
 	actor.RegisterRpc()
 }
-func (actor *RootActor) OnRecv(msg message.IMessage) {
+func (actor *RootActor) OnRecv(msg any) {
 	switch v := msg.(type) {
 	case *message2.NatsRequest:
 		wlog.Debug("nats rpc msg")

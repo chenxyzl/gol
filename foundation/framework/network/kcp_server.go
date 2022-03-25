@@ -1,10 +1,16 @@
 package network
 
 import (
+	"foundation/framework/g"
+	"foundation/framework/util"
 	"github.com/xtaci/kcp-go"
 	"net"
 	"time"
 )
+
+func init() {
+	g.UUID, _ = util.NewUUID(1)
+}
 
 //StartKcpServer 启动kcp服务器 通常使用默认配置就可以了(也就是dupConfig=nil)
 func StartKcpServer(addr string, callback ConnCallback, protocol Protocol, defaultConfig *Config) (*Server, error) {
@@ -58,9 +64,10 @@ func StartKcpServer(addr string, callback ConnCallback, protocol Protocol, defau
 		kcpConn := conn.(*kcp.UDPSession)
 		kcpConn.SetNoDelay(1, 10, 2, 1)
 		kcpConn.SetStreamMode(true)
-		kcpConn.SetWindowSize(4096, 1024)
+		kcpConn.SetWindowSize(32, 32)
 		kcpConn.SetReadBuffer(1024)
-		kcpConn.SetWriteBuffer(4096)
+		kcpConn.SetWriteBuffer(1024)
+		kcpConn.SetMtu(1400) //最大不要超过1472
 		//kcpConn.SetWindowSize(8, 8)
 		//kcpConn.SetReadBuffer(8)
 		//kcpConn.SetWriteBuffer(8)

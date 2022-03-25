@@ -28,7 +28,7 @@ type NatsComponent struct {
 	enc                  *nats.EncodedConn // NATS的Conn
 	dispatcherReplayMap  map[uint32]ifs.RPCFunc
 	dispatcherNoReplyMap map[uint32]ifs.RPCFunc
-	subscriberTopic      string // 订阅路径
+	subscriberTopic      map[string]*nats.Subscription // 订阅路径
 }
 
 func (c *NatsComponent) Constructor(args ...interface{}) {
@@ -42,6 +42,7 @@ func (c *NatsComponent) Constructor(args ...interface{}) {
 	c.addr = addr
 	c.dispatcherReplayMap = make(map[uint32]ifs.RPCFunc)
 	c.dispatcherNoReplyMap = make(map[uint32]ifs.RPCFunc)
+	c.subscriberTopic = make(map[string]*nats.Subscription)
 }
 func (c *NatsComponent) Name() component.ComType {
 	return component.NatsCom
@@ -90,7 +91,7 @@ func (c *NatsComponent) Load() {
 	c.enc = enc
 }
 func (c *NatsComponent) Start() {
-	c.RegisterSubscriberSelf()
+	c.RegisterSubscriber(fmt.Sprintf("%s.%d", g.RoleTyp(), g.Id()))
 }
 func (c *NatsComponent) Tick(int64 int64) {
 
@@ -103,10 +104,14 @@ func (c *NatsComponent) Destroy() {
 
 }
 
-func (c *NatsComponent) RegisterSubscriberSelf() {
-	c.enc.Subscribe(fmt.Sprintf("%s.%d", g.RoleTyp(), g.Id()), func(msg *nats.Msg) {
+func (c *NatsComponent) RegisterSubscriber(topic string) error {
+	if _, ok := c.subscriberTopic[topic]; ok {
+		return fmt.Errorf("[NatsComponent.RegisterSubscriberSelf] repeated topic:[%s]", topic)
+	}
+	sub, err := c.enc.Subscribe(topic, func(msg *nats.Msg) {
 		m := &message2.NatsRequest{}
 		err := proto.Unmarshal(msg.Data, m)
+		//逻辑上肯定不存在这种情况 ～ 除非被外部攻击-此时不需要处理这种错误
 		if err != nil {
 			wlog.Error("[NatsComponent.RegisterSubscriberSelf] proto unmarshal error")
 		} else {
@@ -114,6 +119,12 @@ func (c *NatsComponent) RegisterSubscriberSelf() {
 			c.Node.AddMessage(m)
 		}
 	})
+	if err != nil {
+		wlog.Errorf("[NatsComponent.RegisterSubscriberSelf] sub error: %v", err)
+		return err
+	}
+	c.subscriberTopic[topic] = sub
+	return nil
 }
 
 func (c *NatsComponent) RegisterEvent(cmd uint32, handler ifs.RPCFunc, hasReply bool) {
@@ -141,13 +152,13 @@ func (c *NatsComponent) Dispatch(req *message2.NatsRequest) {
 		err := recover()
 		if nil != err {
 			trace := string(debug.Stack())
-			println("panic:", req.Uid, req.Cmd, err, trace)
-			wlog.Errorf("[NatsComponent.Dispatch] Dispatch uid=[%d] cmd=[%d] panic(%v) stack:%s", req.Uid, req.Cmd, err, trace)
+			println("panic:", req.ActorRef, req.Cmd, err, trace)
+			wlog.Errorf("[NatsComponent.Dispatch] Dispatch uid=[%v] cmd=[%d] panic(%v) stack:%s", req.ActorRef, req.Cmd, err, trace)
 		}
 	}()
 
 	start := time.Now()
-	wlog.Debugf("[NatsComponent.Dispatch] Dispatch uid=[%d], cmd=[%d]", req.Uid, req.Cmd)
+	wlog.Debugf("[NatsComponent.Dispatch] Dispatch uid=[%v], cmd=[%d]", req.ActorRef, req.Cmd)
 	span := time.Since(start)
 	if f, ok := c.dispatcherReplayMap[req.Cmd]; ok {
 		c.dispatchReplyHandler(f, req)
@@ -157,7 +168,7 @@ func (c *NatsComponent) Dispatch(req *message2.NatsRequest) {
 		wlog.Errorf("[NatsComponent.Dispatch] no handler[%d]", req.Cmd)
 	}
 	if span > slowTime {
-		wlog.Warnf("[NatsComponent.Dispatch] Dispatch slow uid[%d] cmd[%d] execute_time[%d(ms)]", req.Uid, req.Cmd, span.Milliseconds())
+		wlog.Warnf("[NatsComponent.Dispatch] Dispatch slow uid[%v] cmd[%d] execute_time[%d(ms)]", req.ActorRef, req.Cmd, span.Milliseconds())
 	}
 }
 
@@ -168,15 +179,15 @@ func (c *NatsComponent) dispatchReplyHandler(f ifs.RPCFunc, req *message2.NatsRe
 		err := recover()
 		if nil != err {
 			trace := string(debug.Stack())
-			println("panic:", req.Uid, req.Cmd, err, trace)
-			wlog.Errorf("[NatsComponent.dispatchReplyHandler] Dispatch uid=[%d] cmd=[%d] panic(%v) stack:%s", req.Uid, req.Cmd, err, trace)
+			println("panic:", req.ActorRef, req.Cmd, err, trace)
+			wlog.Errorf("[NatsComponent.dispatchReplyHandler] Dispatch uid=[%v] cmd=[%d] panic(%v) stack:%s", req.ActorRef, req.Cmd, err, trace)
 			code = message2.Code_UnknownError
 		}
 		//如果有错误则返回给目标url--这个url是临时的，不存在重复消费的情况
 		if code != message2.Code_OK {
 			wlog.Debugf("[NatsComponent.dispatchReplyHandler] uid:[%d] cmd:[%d] reply error:[%d]", code)
 			rep := &message2.NatsReply{
-				Uid:  req.Uid,
+				ActorRef:  req.ActorRef,
 				Cmd:  req.Cmd,
 				Data: nil,
 				Code: code,
@@ -196,8 +207,8 @@ func (c *NatsComponent) dispatchNoReplyHandler(f ifs.RPCFunc, req *message2.Nats
 		err := recover()
 		if nil != err {
 			trace := string(debug.Stack())
-			println("panic:", req.Uid, req.Cmd, err, trace)
-			wlog.Errorf("[NatsComponent.dispatchNoReplyHandler] Dispatch uid=[%d] cmd=[%d] panic(%v) stack:%s", req.Uid, req.Cmd, err, trace)
+			println("panic:", req.ActorRef, req.Cmd, err, trace)
+			wlog.Errorf("[NatsComponent.dispatchNoReplyHandler] Dispatch uid=[%v] cmd=[%d] panic(%v) stack:%s", req.ActorRef, req.Cmd, err, trace)
 			code = message2.Code_UnknownError
 		}
 		if code != message2.Code_OK {
@@ -208,4 +219,21 @@ func (c *NatsComponent) dispatchNoReplyHandler(f ifs.RPCFunc, req *message2.Nats
 	//do
 	code = f(req)
 	//log
+}
+
+func (c *NatsComponent) Ask(req *message2.NatsRequest) (*message2.NatsReply, message2.Code) {
+	//todo 更具一致性hash算法 找到对应的nodeId
+	//todo AsyncCall调用nats的request/reply来发起请求
+	c.Node.SafeAsyncDo(func() {
+		//c.enc.Request()
+	})
+	return nil, message2.Code_OK
+}
+func (c *NatsComponent) Tell(req *message2.NatsRequest) message2.Code {
+	//todo 更具一致性hash算法 找到对应的nodeId
+	//todo AsyncCall调用用nats的notify发送消息
+	c.Node.SafeAsyncDo(func() {
+		//c.enc.Publish()
+	})
+	return message2.Code_OK
 }

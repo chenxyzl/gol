@@ -1,6 +1,5 @@
 syntax = "proto3";
 //home相关
-import "code.proto";
 import "common.proto";
 option go_package = "/message";
 

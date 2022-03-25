@@ -20,21 +20,120 @@ const (
 	_ = protoimpl.EnforceVersion(protoimpl.MaxVersion - 20)
 )
 
+type ActorType int32
+
+const (
+	ActorType_none ActorType = 0 //占位
+)
+
+// Enum value maps for ActorType.
+var (
+	ActorType_name = map[int32]string{
+		0: "none",
+	}
+	ActorType_value = map[string]int32{
+		"none": 0,
+	}
+)
+
+
+func (x ActorType) Enum() *ActorType {
+	p := new(ActorType)
+	*p = x
+	return p
+}
+
+func (x ActorType) String() string {
+	return protoimpl.X.EnumStringOf(x.Descriptor(), protoreflect.EnumNumber(x))
+}
+
+func (ActorType) Descriptor() protoreflect.EnumDescriptor {
+	return file_inbase_proto_enumTypes[0].Descriptor()
+}
+
+func (ActorType) Type() protoreflect.EnumType {
+	return &file_inbase_proto_enumTypes[0]
+}
+
+func (x ActorType) Number() protoreflect.EnumNumber {
+	return protoreflect.EnumNumber(x)
+}
+
+// Deprecated: Use ActorType.Descriptor instead.
+func (ActorType) EnumDescriptor() ([]byte, []int) {
+	return file_inbase_proto_rawDescGZIP(), []int{0}
+}
+
+type ActorRef struct {
+	state         protoimpl.MessageState
+	sizeCache     protoimpl.SizeCache
+	unknownFields protoimpl.UnknownFields
+
+	Uid  uint64    `protobuf:"varint,1,opt,name=uid,proto3" json:"uid,omitempty"`                          //entityId
+	Type ActorType `protobuf:"varint,2,opt,name=type,proto3,enum=message.ActorType" json:"type,omitempty"` //entityType
+}
+
+func (x *ActorRef) Reset() {
+	*x = ActorRef{}
+	if protoimpl.UnsafeEnabled {
+		mi := &file_inbase_proto_msgTypes[0]
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		ms.StoreMessageInfo(mi)
+	}
+}
+
+func (x *ActorRef) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*ActorRef) ProtoMessage() {}
+
+func (x *ActorRef) ProtoReflect() protoreflect.Message {
+	mi := &file_inbase_proto_msgTypes[0]
+	if protoimpl.UnsafeEnabled && x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use ActorRef.ProtoReflect.Descriptor instead.
+func (*ActorRef) Descriptor() ([]byte, []int) {
+	return file_inbase_proto_rawDescGZIP(), []int{0}
+}
+
+func (x *ActorRef) GetUid() uint64 {
+	if x != nil {
+		return x.Uid
+	}
+	return 0
+}
+
+func (x *ActorRef) GetType() ActorType {
+	if x != nil {
+		return x.Type
+	}
+	return ActorType_none
+}
+
 type NatsRequest struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
 
-	Uid       uint64 `protobuf:"varint,1,opt,name=uid,proto3" json:"uid,omitempty"`            //entityId
-	Cmd       uint32 `protobuf:"varint,2,opt,name=cmd,proto3" json:"cmd,omitempty"`            //rpc的id
-	Data      []byte `protobuf:"bytes,3,opt,name=data,proto3" json:"data,omitempty"`           //数据 //第一个消息必须是登录。gate会保存里面的uid
-	ReplayUrl string `protobuf:"bytes,4,opt,name=replayUrl,proto3" json:"replayUrl,omitempty"` //rpc返回的url-自动填充-不需要设置
+	ActorRef  *ActorRef `protobuf:"bytes,1,opt,name=actorRef,proto3" json:"actorRef,omitempty"`   //目标
+	Cmd       uint32    `protobuf:"varint,2,opt,name=cmd,proto3" json:"cmd,omitempty"`            //rpc的id
+	Data      []byte    `protobuf:"bytes,3,opt,name=data,proto3" json:"data,omitempty"`           //数据 //第一个消息必须是登录。gate会保存里面的uid
+	ReplayUrl string    `protobuf:"bytes,4,opt,name=replayUrl,proto3" json:"replayUrl,omitempty"` //rpc返回的url-自动填充-不需要设置
 }
 
 func (x *NatsRequest) Reset() {
 	*x = NatsRequest{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_inbase_proto_msgTypes[0]
+		mi := &file_inbase_proto_msgTypes[1]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -47,7 +146,7 @@ func (x *NatsRequest) String() string {
 func (*NatsRequest) ProtoMessage() {}
 
 func (x *NatsRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_inbase_proto_msgTypes[0]
+	mi := &file_inbase_proto_msgTypes[1]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -60,14 +159,14 @@ func (x *NatsRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use NatsRequest.ProtoReflect.Descriptor instead.
 func (*NatsRequest) Descriptor() ([]byte, []int) {
-	return file_inbase_proto_rawDescGZIP(), []int{0}
+	return file_inbase_proto_rawDescGZIP(), []int{1}
 }
 
-func (x *NatsRequest) GetUid() uint64 {
+func (x *NatsRequest) GetActorRef() *ActorRef {
 	if x != nil {
-		return x.Uid
+		return x.ActorRef
 	}
-	return 0
+	return nil
 }
 
 func (x *NatsRequest) GetCmd() uint32 {
@@ -96,16 +195,16 @@ type NatsReply struct {
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
 
-	Uid  uint64 `protobuf:"varint,1,opt,name=uid,proto3" json:"uid,omitempty"`                     //entityId
-	Cmd  uint32 `protobuf:"varint,2,opt,name=cmd,proto3" json:"cmd,omitempty"`                     //rpc的id
-	Data []byte `protobuf:"bytes,3,opt,name=data,proto3" json:"data,omitempty"`                    //数据
-	Code Code   `protobuf:"varint,5,opt,name=code,proto3,enum=message.Code" json:"code,omitempty"` //错误码
+	ActorRef *ActorRef `protobuf:"bytes,1,opt,name=actorRef,proto3" json:"actorRef,omitempty"`            //目标
+	Cmd      uint32    `protobuf:"varint,2,opt,name=cmd,proto3" json:"cmd,omitempty"`                     //rpc的id
+	Data     []byte    `protobuf:"bytes,3,opt,name=data,proto3" json:"data,omitempty"`                    //数据
+	Code     Code      `protobuf:"varint,5,opt,name=code,proto3,enum=message.Code" json:"code,omitempty"` //错误码
 }
 
 func (x *NatsReply) Reset() {
 	*x = NatsReply{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_inbase_proto_msgTypes[1]
+		mi := &file_inbase_proto_msgTypes[2]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -118,7 +217,7 @@ func (x *NatsReply) String() string {
 func (*NatsReply) ProtoMessage() {}
 
 func (x *NatsReply) ProtoReflect() protoreflect.Message {
-	mi := &file_inbase_proto_msgTypes[1]
+	mi := &file_inbase_proto_msgTypes[2]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -131,14 +230,14 @@ func (x *NatsReply) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use NatsReply.ProtoReflect.Descriptor instead.
 func (*NatsReply) Descriptor() ([]byte, []int) {
-	return file_inbase_proto_rawDescGZIP(), []int{1}
+	return file_inbase_proto_rawDescGZIP(), []int{2}
 }
 
-func (x *NatsReply) GetUid() uint64 {
+func (x *NatsReply) GetActorRef() *ActorRef {
 	if x != nil {
-		return x.Uid
+		return x.ActorRef
 	}
-	return 0
+	return nil
 }
 
 func (x *NatsReply) GetCmd() uint32 {
@@ -167,21 +266,31 @@ var File_inbase_proto protoreflect.FileDescriptor
 var file_inbase_proto_rawDesc = []byte{
 	0x0a, 0x0c, 0x69, 0x6e, 0x62, 0x61, 0x73, 0x65, 0x2e, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x12, 0x07,
 	0x6d, 0x65, 0x73, 0x73, 0x61, 0x67, 0x65, 0x1a, 0x0a, 0x63, 0x6f, 0x64, 0x65, 0x2e, 0x70, 0x72,
-	0x6f, 0x74, 0x6f, 0x22, 0x63, 0x0a, 0x0b, 0x4e, 0x61, 0x74, 0x73, 0x52, 0x65, 0x71, 0x75, 0x65,
-	0x73, 0x74, 0x12, 0x10, 0x0a, 0x03, 0x75, 0x69, 0x64, 0x18, 0x01, 0x20, 0x01, 0x28, 0x04, 0x52,
-	0x03, 0x75, 0x69, 0x64, 0x12, 0x10, 0x0a, 0x03, 0x63, 0x6d, 0x64, 0x18, 0x02, 0x20, 0x01, 0x28,
-	0x0d, 0x52, 0x03, 0x63, 0x6d, 0x64, 0x12, 0x12, 0x0a, 0x04, 0x64, 0x61, 0x74, 0x61, 0x18, 0x03,
-	0x20, 0x01, 0x28, 0x0c, 0x52, 0x04, 0x64, 0x61, 0x74, 0x61, 0x12, 0x1c, 0x0a, 0x09, 0x72, 0x65,
-	0x70, 0x6c, 0x61, 0x79, 0x55, 0x72, 0x6c, 0x18, 0x04, 0x20, 0x01, 0x28, 0x09, 0x52, 0x09, 0x72,
-	0x65, 0x70, 0x6c, 0x61, 0x79, 0x55, 0x72, 0x6c, 0x22, 0x66, 0x0a, 0x09, 0x4e, 0x61, 0x74, 0x73,
-	0x52, 0x65, 0x70, 0x6c, 0x79, 0x12, 0x10, 0x0a, 0x03, 0x75, 0x69, 0x64, 0x18, 0x01, 0x20, 0x01,
-	0x28, 0x04, 0x52, 0x03, 0x75, 0x69, 0x64, 0x12, 0x10, 0x0a, 0x03, 0x63, 0x6d, 0x64, 0x18, 0x02,
+	0x6f, 0x74, 0x6f, 0x1a, 0x0c, 0x63, 0x6f, 0x6d, 0x6d, 0x6f, 0x6e, 0x2e, 0x70, 0x72, 0x6f, 0x74,
+	0x6f, 0x22, 0x44, 0x0a, 0x08, 0x41, 0x63, 0x74, 0x6f, 0x72, 0x52, 0x65, 0x66, 0x12, 0x10, 0x0a,
+	0x03, 0x75, 0x69, 0x64, 0x18, 0x01, 0x20, 0x01, 0x28, 0x04, 0x52, 0x03, 0x75, 0x69, 0x64, 0x12,
+	0x26, 0x0a, 0x04, 0x74, 0x79, 0x70, 0x65, 0x18, 0x02, 0x20, 0x01, 0x28, 0x0e, 0x32, 0x12, 0x2e,
+	0x6d, 0x65, 0x73, 0x73, 0x61, 0x67, 0x65, 0x2e, 0x41, 0x63, 0x74, 0x6f, 0x72, 0x54, 0x79, 0x70,
+	0x65, 0x52, 0x04, 0x74, 0x79, 0x70, 0x65, 0x22, 0x80, 0x01, 0x0a, 0x0b, 0x4e, 0x61, 0x74, 0x73,
+	0x52, 0x65, 0x71, 0x75, 0x65, 0x73, 0x74, 0x12, 0x2d, 0x0a, 0x08, 0x61, 0x63, 0x74, 0x6f, 0x72,
+	0x52, 0x65, 0x66, 0x18, 0x01, 0x20, 0x01, 0x28, 0x0b, 0x32, 0x11, 0x2e, 0x6d, 0x65, 0x73, 0x73,
+	0x61, 0x67, 0x65, 0x2e, 0x41, 0x63, 0x74, 0x6f, 0x72, 0x52, 0x65, 0x66, 0x52, 0x08, 0x61, 0x63,
+	0x74, 0x6f, 0x72, 0x52, 0x65, 0x66, 0x12, 0x10, 0x0a, 0x03, 0x63, 0x6d, 0x64, 0x18, 0x02, 0x20,
+	0x01, 0x28, 0x0d, 0x52, 0x03, 0x63, 0x6d, 0x64, 0x12, 0x12, 0x0a, 0x04, 0x64, 0x61, 0x74, 0x61,
+	0x18, 0x03, 0x20, 0x01, 0x28, 0x0c, 0x52, 0x04, 0x64, 0x61, 0x74, 0x61, 0x12, 0x1c, 0x0a, 0x09,
+	0x72, 0x65, 0x70, 0x6c, 0x61, 0x79, 0x55, 0x72, 0x6c, 0x18, 0x04, 0x20, 0x01, 0x28, 0x09, 0x52,
+	0x09, 0x72, 0x65, 0x70, 0x6c, 0x61, 0x79, 0x55, 0x72, 0x6c, 0x22, 0x83, 0x01, 0x0a, 0x09, 0x4e,
+	0x61, 0x74, 0x73, 0x52, 0x65, 0x70, 0x6c, 0x79, 0x12, 0x2d, 0x0a, 0x08, 0x61, 0x63, 0x74, 0x6f,
+	0x72, 0x52, 0x65, 0x66, 0x18, 0x01, 0x20, 0x01, 0x28, 0x0b, 0x32, 0x11, 0x2e, 0x6d, 0x65, 0x73,
+	0x73, 0x61, 0x67, 0x65, 0x2e, 0x41, 0x63, 0x74, 0x6f, 0x72, 0x52, 0x65, 0x66, 0x52, 0x08, 0x61,
+	0x63, 0x74, 0x6f, 0x72, 0x52, 0x65, 0x66, 0x12, 0x10, 0x0a, 0x03, 0x63, 0x6d, 0x64, 0x18, 0x02,
 	0x20, 0x01, 0x28, 0x0d, 0x52, 0x03, 0x63, 0x6d, 0x64, 0x12, 0x12, 0x0a, 0x04, 0x64, 0x61, 0x74,
 	0x61, 0x18, 0x03, 0x20, 0x01, 0x28, 0x0c, 0x52, 0x04, 0x64, 0x61, 0x74, 0x61, 0x12, 0x21, 0x0a,
 	0x04, 0x63, 0x6f, 0x64, 0x65, 0x18, 0x05, 0x20, 0x01, 0x28, 0x0e, 0x32, 0x0d, 0x2e, 0x6d, 0x65,
 	0x73, 0x73, 0x61, 0x67, 0x65, 0x2e, 0x43, 0x6f, 0x64, 0x65, 0x52, 0x04, 0x63, 0x6f, 0x64, 0x65,
-	0x42, 0x0a, 0x5a, 0x08, 0x2f, 0x6d, 0x65, 0x73, 0x73, 0x61, 0x67, 0x65, 0x62, 0x06, 0x70, 0x72,
-	0x6f, 0x74, 0x6f, 0x33,
+	0x2a, 0x15, 0x0a, 0x09, 0x41, 0x63, 0x74, 0x6f, 0x72, 0x54, 0x79, 0x70, 0x65, 0x12, 0x08, 0x0a,
+	0x04, 0x6e, 0x6f, 0x6e, 0x65, 0x10, 0x00, 0x42, 0x0a, 0x5a, 0x08, 0x2f, 0x6d, 0x65, 0x73, 0x73,
+	0x61, 0x67, 0x65, 0x62, 0x06, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x33,
 }
 
 var (
@@ -196,19 +305,25 @@ func file_inbase_proto_rawDescGZIP() []byte {
 	return file_inbase_proto_rawDescData
 }
 
-var file_inbase_proto_msgTypes = make([]protoimpl.MessageInfo, 2)
+var file_inbase_proto_enumTypes = make([]protoimpl.EnumInfo, 1)
+var file_inbase_proto_msgTypes = make([]protoimpl.MessageInfo, 3)
 var file_inbase_proto_goTypes = []interface{}{
-	(*NatsRequest)(nil), // 0: message.NatsRequest
-	(*NatsReply)(nil),   // 1: message.NatsReply
-	(Code)(0),           // 2: message.Code
+	(ActorType)(0),      // 0: message.ActorType
+	(*ActorRef)(nil),    // 1: message.ActorRef
+	(*NatsRequest)(nil), // 2: message.NatsRequest
+	(*NatsReply)(nil),   // 3: message.NatsReply
+	(Code)(0),           // 4: message.Code
 }
 var file_inbase_proto_depIdxs = []int32{
-	2, // 0: message.NatsReply.code:type_name -> message.Code
-	1, // [1:1] is the sub-list for method output_type
-	1, // [1:1] is the sub-list for method input_type
-	1, // [1:1] is the sub-list for extension type_name
-	1, // [1:1] is the sub-list for extension extendee
-	0, // [0:1] is the sub-list for field type_name
+	0, // 0: message.ActorRef.type:type_name -> message.ActorType
+	1, // 1: message.NatsRequest.actorRef:type_name -> message.ActorRef
+	1, // 2: message.NatsReply.actorRef:type_name -> message.ActorRef
+	4, // 3: message.NatsReply.code:type_name -> message.Code
+	4, // [4:4] is the sub-list for method output_type
+	4, // [4:4] is the sub-list for method input_type
+	4, // [4:4] is the sub-list for extension type_name
+	4, // [4:4] is the sub-list for extension extendee
+	0, // [0:4] is the sub-list for field type_name
 }
 
 func init() { file_inbase_proto_init() }
@@ -217,9 +332,10 @@ func file_inbase_proto_init() {
 		return
 	}
 	file_code_proto_init()
+	file_common_proto_init()
 	if !protoimpl.UnsafeEnabled {
 		file_inbase_proto_msgTypes[0].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*NatsRequest); i {
+			switch v := v.(*ActorRef); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -231,6 +347,18 @@ func file_inbase_proto_init() {
 			}
 		}
 		file_inbase_proto_msgTypes[1].Exporter = func(v interface{}, i int) interface{} {
+			switch v := v.(*NatsRequest); i {
+			case 0:
+				return &v.state
+			case 1:
+				return &v.sizeCache
+			case 2:
+				return &v.unknownFields
+			default:
+				return nil
+			}
+		}
+		file_inbase_proto_msgTypes[2].Exporter = func(v interface{}, i int) interface{} {
 			switch v := v.(*NatsReply); i {
 			case 0:
 				return &v.state
@@ -248,13 +376,14 @@ func file_inbase_proto_init() {
 		File: protoimpl.DescBuilder{
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: file_inbase_proto_rawDesc,
-			NumEnums:      0,
-			NumMessages:   2,
+			NumEnums:      1,
+			NumMessages:   3,
 			NumExtensions: 0,
 			NumServices:   0,
 		},
 		GoTypes:           file_inbase_proto_goTypes,
 		DependencyIndexes: file_inbase_proto_depIdxs,
+		EnumInfos:         file_inbase_proto_enumTypes,
 		MessageInfos:      file_inbase_proto_msgTypes,
 	}.Build()
 	File_inbase_proto = out.File

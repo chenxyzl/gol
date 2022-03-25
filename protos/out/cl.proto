@@ -1,5 +1,5 @@
 syntax = "proto3";
-//http协议
+//登录服～http协议
 package message;
 option go_package = "/message";
 

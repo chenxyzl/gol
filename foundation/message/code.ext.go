@@ -8,6 +8,8 @@ const (
 	Code_ActorNoFound              Code = 102
 	Code_NatsRequestUnmarshalError Code = 103
 	Code_NatsReplyUnmarshalError   Code = 104
+	Code_MarshalError              Code = 105
+	Code_UnmarshalError            Code = 106
 )
 
 func init() {
@@ -23,4 +25,10 @@ func init() {
 
 	Code_name[int32(Code_NatsReplyUnmarshalError)] = "NatsReplyUnmarshalError"
 	Code_value["NatsReplyUnmarshalError"] = int32(Code_NatsReplyUnmarshalError)
+
+	Code_name[int32(Code_MarshalError)] = "MarshalError"
+	Code_value["MarshalError"] = int32(Code_MarshalError)
+
+	Code_name[int32(Code_UnmarshalError)] = "UnmarshalError"
+	Code_value["UnmarshalError"] = int32(Code_UnmarshalError)
 }

@@ -10,6 +10,7 @@ import (
 	protoreflect "google.golang.org/protobuf/reflect/protoreflect"
 	protoimpl "google.golang.org/protobuf/runtime/protoimpl"
 	reflect "reflect"
+	sync "sync"
 )
 
 const (
@@ -19,16 +20,121 @@ const (
 	_ = protoimpl.EnforceVersion(protoimpl.MaxVersion - 20)
 )
 
+//home～world 同步玩家登录
+//HW_Login WH_Login
+type HW_Login struct {
+	state         protoimpl.MessageState
+	sizeCache     protoimpl.SizeCache
+	unknownFields protoimpl.UnknownFields
+
+	Uid uint64 `protobuf:"varint,1,opt,name=uid,proto3" json:"uid,omitempty"`
+}
+
+func (x *HW_Login) Reset() {
+	*x = HW_Login{}
+	if protoimpl.UnsafeEnabled {
+		mi := &file_in_proto_msgTypes[0]
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		ms.StoreMessageInfo(mi)
+	}
+}
+
+func (x *HW_Login) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*HW_Login) ProtoMessage() {}
+
+func (x *HW_Login) ProtoReflect() protoreflect.Message {
+	mi := &file_in_proto_msgTypes[0]
+	if protoimpl.UnsafeEnabled && x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use HW_Login.ProtoReflect.Descriptor instead.
+func (*HW_Login) Descriptor() ([]byte, []int) {
+	return file_in_proto_rawDescGZIP(), []int{0}
+}
+
+func (x *HW_Login) GetUid() uint64 {
+	if x != nil {
+		return x.Uid
+	}
+	return 0
+}
+
+type WH_Login struct {
+	state         protoimpl.MessageState
+	sizeCache     protoimpl.SizeCache
+	unknownFields protoimpl.UnknownFields
+}
+
+func (x *WH_Login) Reset() {
+	*x = WH_Login{}
+	if protoimpl.UnsafeEnabled {
+		mi := &file_in_proto_msgTypes[1]
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		ms.StoreMessageInfo(mi)
+	}
+}
+
+func (x *WH_Login) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*WH_Login) ProtoMessage() {}
+
+func (x *WH_Login) ProtoReflect() protoreflect.Message {
+	mi := &file_in_proto_msgTypes[1]
+	if protoimpl.UnsafeEnabled && x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use WH_Login.ProtoReflect.Descriptor instead.
+func (*WH_Login) Descriptor() ([]byte, []int) {
+	return file_in_proto_rawDescGZIP(), []int{1}
+}
+
 var File_in_proto protoreflect.FileDescriptor
 
 var file_in_proto_rawDesc = []byte{
 	0x0a, 0x08, 0x69, 0x6e, 0x2e, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x12, 0x07, 0x6d, 0x65, 0x73, 0x73,
-	0x61, 0x67, 0x65, 0x1a, 0x0a, 0x63, 0x6f, 0x64, 0x65, 0x2e, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x42,
-	0x0a, 0x5a, 0x08, 0x2f, 0x6d, 0x65, 0x73, 0x73, 0x61, 0x67, 0x65, 0x62, 0x06, 0x70, 0x72, 0x6f,
-	0x74, 0x6f, 0x33,
+	0x61, 0x67, 0x65, 0x22, 0x1c, 0x0a, 0x08, 0x48, 0x57, 0x5f, 0x4c, 0x6f, 0x67, 0x69, 0x6e, 0x12,
+	0x10, 0x0a, 0x03, 0x75, 0x69, 0x64, 0x18, 0x01, 0x20, 0x01, 0x28, 0x04, 0x52, 0x03, 0x75, 0x69,
+	0x64, 0x22, 0x0a, 0x0a, 0x08, 0x57, 0x48, 0x5f, 0x4c, 0x6f, 0x67, 0x69, 0x6e, 0x42, 0x0a, 0x5a,
+	0x08, 0x2f, 0x6d, 0x65, 0x73, 0x73, 0x61, 0x67, 0x65, 0x62, 0x06, 0x70, 0x72, 0x6f, 0x74, 0x6f,
+	0x33,
 }
 
-var file_in_proto_goTypes = []interface{}{}
+var (
+	file_in_proto_rawDescOnce sync.Once
+	file_in_proto_rawDescData = file_in_proto_rawDesc
+)
+
+func file_in_proto_rawDescGZIP() []byte {
+	file_in_proto_rawDescOnce.Do(func() {
+		file_in_proto_rawDescData = protoimpl.X.CompressGZIP(file_in_proto_rawDescData)
+	})
+	return file_in_proto_rawDescData
+}
+
+var file_in_proto_msgTypes = make([]protoimpl.MessageInfo, 2)
+var file_in_proto_goTypes = []interface{}{
+	(*HW_Login)(nil), // 0: message.HW_Login
+	(*WH_Login)(nil), // 1: message.WH_Login
+}
 var file_in_proto_depIdxs = []int32{
 	0, // [0:0] is the sub-list for method output_type
 	0, // [0:0] is the sub-list for method input_type
@@ -42,19 +148,45 @@ func file_in_proto_init() {
 	if File_in_proto != nil {
 		return
 	}
-	file_code_proto_init()
+	if !protoimpl.UnsafeEnabled {
+		file_in_proto_msgTypes[0].Exporter = func(v interface{}, i int) interface{} {
+			switch v := v.(*HW_Login); i {
+			case 0:
+				return &v.state
+			case 1:
+				return &v.sizeCache
+			case 2:
+				return &v.unknownFields
+			default:
+				return nil
+			}
+		}
+		file_in_proto_msgTypes[1].Exporter = func(v interface{}, i int) interface{} {
+			switch v := v.(*WH_Login); i {
+			case 0:
+				return &v.state
+			case 1:
+				return &v.sizeCache
+			case 2:
+				return &v.unknownFields
+			default:
+				return nil
+			}
+		}
+	}
 	type x struct{}
 	out := protoimpl.TypeBuilder{
 		File: protoimpl.DescBuilder{
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: file_in_proto_rawDesc,
 			NumEnums:      0,
-			NumMessages:   0,
+			NumMessages:   2,
 			NumExtensions: 0,
 			NumServices:   0,
 		},
 		GoTypes:           file_in_proto_goTypes,
 		DependencyIndexes: file_in_proto_depIdxs,
+		MessageInfos:      file_in_proto_msgTypes,
 	}.Build()
 	File_in_proto = out.File
 	file_in_proto_rawDesc = nil

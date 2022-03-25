@@ -6,7 +6,7 @@ option go_package = "/message";
 enum Code {
   //基本错误类型 1～99
   OK = 0; //正确
-  Error = 1; //错误
+  Error = 1; //不可预料的内部错误
 
   //系统错误 100~999
   //在incode.pb.go里手动定义-后续用代码生成器生成

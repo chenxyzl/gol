@@ -26,7 +26,7 @@ type Code int32
 const (
 	//基本错误类型 1～99
 	Code_OK    Code = 0 //正确
-	Code_Error Code = 1 //错误
+	Code_Error Code = 1 //不可预料的内部错误
 	//最大
 	Code_Max Code = 16383
 )

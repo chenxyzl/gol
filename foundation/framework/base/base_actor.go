@@ -5,7 +5,10 @@ import (
 	"fmt"
 	"foundation/framework/bif"
 	"foundation/framework/component"
-	"foundation/framework/message"
+	"foundation/framework/component/ifs"
+	"foundation/framework/g"
+	"foundation/message"
+	"github.com/golang/protobuf/proto"
 	"golang.org/x/sync/semaphore"
 	"runtime"
 	"sync"
@@ -22,7 +25,7 @@ type Actor struct {
 	maxRunningGoSize int32 //size等于1就等同于单线程了
 	runningGoNum     int32
 	//邮箱
-	Boxs chan message.IMessage
+	Boxs chan any
 	//组件相关
 	components        []bif.IComponent
 	componentsMapping map[component.ComType]bif.IComponent //go的泛型太辣鸡了。暂时不用
@@ -34,7 +37,7 @@ func (actor *Actor) Constructor(boxSize int32, maxRunningGoSize int32) {
 		panic("boxSize must bigger than 0")
 	}
 	actor.mux = semaphore.NewWeighted(int64(1))
-	actor.Boxs = make(chan message.IMessage, boxSize)
+	actor.Boxs = make(chan any, boxSize)
 	actor.maxRunningGoSize = maxRunningGoSize
 	//
 	actor.forceSync = true
@@ -93,7 +96,7 @@ func (actor *Actor) checkGoNum() {
 	actor.unlockGoNum()
 }
 
-func (actor *Actor) asyncDo(message message.IMessage) {
+func (actor *Actor) asyncDo(message any) {
 	//检查go程序
 	actor.checkGoNum()
 	//执行异步代码
@@ -123,7 +126,7 @@ func (actor *Actor) SafeAsyncDo(f func()) {
 	}()
 }
 
-func (actor *Actor) AddMessage(message message.IMessage) {
+func (actor *Actor) AddMessage(message any) {
 	actor.Boxs <- message
 }
 
@@ -173,14 +176,39 @@ func (actor *Actor) Destroy() {
 	}
 }
 
-func (actor *Actor) AsyncAsk(target bif.IActorRef, msg *message.IMessage) *message.IMessage {
-	//todo 更具一致性hash算法 找到对应的nodeId
-	//todo AsyncCall调用nats的request/reply来发起请求
-	return nil
+func (actor *Actor) To() *message.ActorRef {
+	return &message.ActorRef{
+		Uid:  actor.GetUid(),
+		Type: message.ActorType(message.ActorType_value[actor.GetType()]),
+	}
 }
 
-func (actor *Actor) AsyncTell(target bif.IActorRef, msg *message.IMessage) *message.IMessage {
-	//todo 更具一致性hash算法 找到对应的nodeId
-	//todo AsyncCall调用用nats的notify发送消息
-	return nil
+func (actor *Actor) AsyncAsk(target message.IActorRef, cmd message.CMD, msg proto.Message) (proto.Message, message.Code) {
+	nats := g.Root.GetComponent(component.NatsCom).(ifs.INatsComponent)
+	data, err := proto.Marshal(msg)
+	if err != nil {
+		return nil, message.Code_MarshalError
+	}
+	req := &message.NatsRequest{
+		ActorRef: target.To(),
+		Cmd:      uint32(cmd),
+		Data:     data,
+	}
+	rep, code := nats.Ask(req)
+	return rep, code
+}
+
+func (actor *Actor) AsyncTell(target message.IActorRef, cmd message.CMD, msg proto.Message) message.Code {
+	nats := g.Root.GetComponent(component.NatsCom).(ifs.INatsComponent)
+	data, err := proto.Marshal(msg)
+	if err != nil {
+		return message.Code_MarshalError
+	}
+	req := &message.NatsRequest{
+		ActorRef: target.To(),
+		Cmd:      uint32(cmd),
+		Data:     data,
+	}
+	code := nats.Tell(req)
+	return code
 }

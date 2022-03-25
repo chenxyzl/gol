@@ -3,7 +3,6 @@ package player
 import (
 	"foundation/framework/base"
 	"foundation/framework/bif"
-	"foundation/framework/message"
 )
 
 var _ bif.IActor = &PlayerActor{}
@@ -21,6 +20,6 @@ func (a *PlayerActor) Init() {
 
 }
 
-func (a *PlayerActor) OnRecv(message message.IMessage) {
+func (a *PlayerActor) OnRecv(message any) {
 
 }

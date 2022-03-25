@@ -21,4 +21,7 @@ type INatsComponent interface {
 	RegisterEvent(cmd uint32, handler RPCFunc, hasReply bool)
 	Dispatch(req *message.NatsRequest)
 	Reply(url string, reply *message.NatsReply)
+	RegisterSubscriber(str string) error
+	Ask(req *message.NatsRequest) (*message.NatsReply, message.Code)
+	Tell(req *message.NatsRequest) message.Code
 }

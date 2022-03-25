@@ -1,5 +1,12 @@
 syntax = "proto3";
-import "code.proto";
 
 package message;
 option go_package = "/message";
+
+//home～world 同步玩家登录
+//HW_Login WH_Login
+message HW_Login{
+  uint64  uid = 1;
+}
+message WH_Login{
+}

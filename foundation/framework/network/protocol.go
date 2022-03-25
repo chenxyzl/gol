@@ -2,7 +2,6 @@ package network
 
 import (
 	"encoding/binary"
-	"errors"
 	"io"
 )
 
@@ -49,9 +48,10 @@ func (this *DefaultProtocol) ReadPacket(r io.Reader) (Packet, error) {
 	if _, err := io.ReadFull(r, lengthBytes); err != nil {
 		return nil, err
 	}
-	if length = binary.BigEndian.Uint32(lengthBytes); length > 1024 {
-		return nil, errors.New("the size of packet is larger than the limit")
-	}
+	length = binary.BigEndian.Uint32(lengthBytes)
+	//if length > 1024 {
+	//	return nil, errors.New("the size of packet is larger than the limit")
+	//}
 
 	buff := make([]byte, length)
 

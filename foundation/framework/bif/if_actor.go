@@ -2,21 +2,22 @@ package bif
 
 import (
 	"foundation/framework/component"
-	"foundation/framework/message"
+	"foundation/message"
 )
 
-func init() { _ = func(a IActor) { _ = a.(IActorRef) } }
+func init() { _ = func(a IActor) { _ = message.IActorRef(a) } }
 
 type IActor interface {
 	GetUid() uint64
-	GetActorType() string
+	GetType() string
+	To() *message.ActorRef
 	Load()
 	Start()
 	Tick(int642 int64)
 	Stop()
 	Destroy()
-	AddMessage(message message.IMessage)
-	OnRecv(message message.IMessage)
+	AddMessage(message any)
+	OnRecv(message any)
 
 	//GetComponent 获取组件
 	GetComponent(comType component.ComType) IComponent
