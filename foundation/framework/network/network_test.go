@@ -49,7 +49,7 @@ func Test_KCPServer(t *testing.T) {
 		ConnReadTimeout:        latency,
 		ConnWriteTimeout:       latency,
 	}
-	server, err := StartKcpServer(":10086", callback, &DefaultProtocol{}, config)
+	server, err := StartKcpServer(":10086", callback, &DefaultProtocol{}, config, nil)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -164,20 +164,12 @@ func Test_KCPServer(t *testing.T) {
 
 func Benchmark_KCPServer(b *testing.B) {
 
-	l, err := kcp.Listen(":10086")
-	if nil != err {
-		panic(err)
-	}
-
 	config := &Config{
 		PacketReceiveChanLimit: 1024,
 		PacketSendChanLimit:    1024,
 	}
 
-	callback := &testCallback{}
-	server := NewServer(config, &testCallback{}, &DefaultProtocol{})
-
-	go server.Start(l, func(conn net.Conn, i *Server) *Conn {
+	createConn := func(conn net.Conn, i *Server) *Conn {
 		kcpConn := conn.(*kcp.UDPSession)
 		kcpConn.SetNoDelay(1, 10, 2, 1)
 		kcpConn.SetStreamMode(true)
@@ -185,9 +177,14 @@ func Benchmark_KCPServer(b *testing.B) {
 		kcpConn.SetReadBuffer(4 * 1024 * 1024)
 		kcpConn.SetWriteBuffer(4 * 1024 * 1024)
 		kcpConn.SetACKNoDelay(true)
+		return NewConn(conn, i)
+	}
 
-		return NewConn(conn, server)
-	})
+	callback := &testCallback{}
+	server, err := StartKcpServer(":10086", callback, &DefaultProtocol{}, config, createConn)
+	if err != nil {
+		b.Fatal(err)
+	}
 
 	time.Sleep(time.Millisecond * 100)
 

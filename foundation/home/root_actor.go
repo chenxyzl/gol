@@ -49,8 +49,8 @@ func (actor *RootActor) OnRecv(msg any) {
 		wlog.Debug("nats rpc msg")
 		c := g.Root.GetComponent(component.NatsCom).(ifs.INatsComponent)
 		c.Dispatch(v)
-	//case *message2.Request: //只有gateway才会收到这种消息
-	//	wlog.Debug("client rpc msg")
+	case *message2.Request: //只有gateway才会收到这种消息
+		wlog.Debug("client rpc msg")
 	default:
 		wlog.Warnf("unknown msg type:%v", reflect.TypeOf(msg).Name())
 	}

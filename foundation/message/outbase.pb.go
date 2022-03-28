@@ -154,6 +154,69 @@ func (x *Reply) GetCode() Code {
 	return Code_OK
 }
 
+type Notify struct {
+	state         protoimpl.MessageState
+	sizeCache     protoimpl.SizeCache
+	unknownFields protoimpl.UnknownFields
+
+	Sn   uint32 `protobuf:"varint,1,opt,name=sn,proto3" json:"sn,omitempty"`    //流水号
+	Cmd  uint32 `protobuf:"varint,2,opt,name=cmd,proto3" json:"cmd,omitempty"`  //rpc的id
+	Data []byte `protobuf:"bytes,3,opt,name=data,proto3" json:"data,omitempty"` //数据
+}
+
+func (x *Notify) Reset() {
+	*x = Notify{}
+	if protoimpl.UnsafeEnabled {
+		mi := &file_outbase_proto_msgTypes[2]
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		ms.StoreMessageInfo(mi)
+	}
+}
+
+func (x *Notify) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*Notify) ProtoMessage() {}
+
+func (x *Notify) ProtoReflect() protoreflect.Message {
+	mi := &file_outbase_proto_msgTypes[2]
+	if protoimpl.UnsafeEnabled && x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use Notify.ProtoReflect.Descriptor instead.
+func (*Notify) Descriptor() ([]byte, []int) {
+	return file_outbase_proto_rawDescGZIP(), []int{2}
+}
+
+func (x *Notify) GetSn() uint32 {
+	if x != nil {
+		return x.Sn
+	}
+	return 0
+}
+
+func (x *Notify) GetCmd() uint32 {
+	if x != nil {
+		return x.Cmd
+	}
+	return 0
+}
+
+func (x *Notify) GetData() []byte {
+	if x != nil {
+		return x.Data
+	}
+	return nil
+}
+
 var File_outbase_proto protoreflect.FileDescriptor
 
 var file_outbase_proto_rawDesc = []byte{
@@ -169,7 +232,11 @@ var file_outbase_proto_rawDesc = []byte{
 	0x12, 0x12, 0x0a, 0x04, 0x64, 0x61, 0x74, 0x61, 0x18, 0x03, 0x20, 0x01, 0x28, 0x0c, 0x52, 0x04,
 	0x64, 0x61, 0x74, 0x61, 0x12, 0x21, 0x0a, 0x04, 0x63, 0x6f, 0x64, 0x65, 0x18, 0x04, 0x20, 0x01,
 	0x28, 0x0e, 0x32, 0x0d, 0x2e, 0x6d, 0x65, 0x73, 0x73, 0x61, 0x67, 0x65, 0x2e, 0x43, 0x6f, 0x64,
-	0x65, 0x52, 0x04, 0x63, 0x6f, 0x64, 0x65, 0x42, 0x0a, 0x5a, 0x08, 0x2f, 0x6d, 0x65, 0x73, 0x73,
+	0x65, 0x52, 0x04, 0x63, 0x6f, 0x64, 0x65, 0x22, 0x3e, 0x0a, 0x06, 0x4e, 0x6f, 0x74, 0x69, 0x66,
+	0x79, 0x12, 0x0e, 0x0a, 0x02, 0x73, 0x6e, 0x18, 0x01, 0x20, 0x01, 0x28, 0x0d, 0x52, 0x02, 0x73,
+	0x6e, 0x12, 0x10, 0x0a, 0x03, 0x63, 0x6d, 0x64, 0x18, 0x02, 0x20, 0x01, 0x28, 0x0d, 0x52, 0x03,
+	0x63, 0x6d, 0x64, 0x12, 0x12, 0x0a, 0x04, 0x64, 0x61, 0x74, 0x61, 0x18, 0x03, 0x20, 0x01, 0x28,
+	0x0c, 0x52, 0x04, 0x64, 0x61, 0x74, 0x61, 0x42, 0x0a, 0x5a, 0x08, 0x2f, 0x6d, 0x65, 0x73, 0x73,
 	0x61, 0x67, 0x65, 0x62, 0x06, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x33,
 }
 
@@ -185,14 +252,15 @@ func file_outbase_proto_rawDescGZIP() []byte {
 	return file_outbase_proto_rawDescData
 }
 
-var file_outbase_proto_msgTypes = make([]protoimpl.MessageInfo, 2)
+var file_outbase_proto_msgTypes = make([]protoimpl.MessageInfo, 3)
 var file_outbase_proto_goTypes = []interface{}{
 	(*Request)(nil), // 0: message.Request
 	(*Reply)(nil),   // 1: message.Reply
-	(Code)(0),       // 2: message.Code
+	(*Notify)(nil),  // 2: message.Notify
+	(Code)(0),       // 3: message.Code
 }
 var file_outbase_proto_depIdxs = []int32{
-	2, // 0: message.Reply.code:type_name -> message.Code
+	3, // 0: message.Reply.code:type_name -> message.Code
 	1, // [1:1] is the sub-list for method output_type
 	1, // [1:1] is the sub-list for method input_type
 	1, // [1:1] is the sub-list for extension type_name
@@ -231,6 +299,18 @@ func file_outbase_proto_init() {
 				return nil
 			}
 		}
+		file_outbase_proto_msgTypes[2].Exporter = func(v interface{}, i int) interface{} {
+			switch v := v.(*Notify); i {
+			case 0:
+				return &v.state
+			case 1:
+				return &v.sizeCache
+			case 2:
+				return &v.unknownFields
+			default:
+				return nil
+			}
+		}
 	}
 	type x struct{}
 	out := protoimpl.TypeBuilder{
@@ -238,7 +318,7 @@ func file_outbase_proto_init() {
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: file_outbase_proto_rawDesc,
 			NumEnums:      0,
-			NumMessages:   2,
+			NumMessages:   3,
 			NumExtensions: 0,
 			NumServices:   0,
 		},

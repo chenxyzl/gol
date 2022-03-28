@@ -219,6 +219,7 @@ func (c *Conn) handleLoop() {
 				return
 			}
 			if !c.callback.OnMessage(c, p) {
+				c.Close()
 				return
 			}
 		}

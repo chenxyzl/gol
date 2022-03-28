@@ -3,12 +3,15 @@ package gate
 import (
 	"foundation/framework/base"
 	"foundation/framework/bif"
-	"foundation/framework/component"
-	"foundation/framework/component/ifs"
 	"foundation/framework/g"
+	"foundation/framework/network"
+	component2 "foundation/gate/component"
+	ifs2 "foundation/gate/component/ifs"
 	message2 "foundation/message"
+	"github.com/golang/protobuf/proto"
 	"gitlab-ee.funplus.io/watcher/watcher/misc/wlog"
 	"reflect"
+	"time"
 )
 
 var _ bif.IActor = &RootActor{}
@@ -20,33 +23,35 @@ type RootActor struct {
 func NewActor(boxSize int32, maxRunningGoSize int32) *RootActor {
 	actor := &RootActor{}
 	actor.Constructor(boxSize, maxRunningGoSize)
+	actor.RegisterComponent()
 	return actor
 }
 
 func (actor *RootActor) RegisterComponent() {
 }
 
-func (actor *RootActor) RegisterRpc() {
-}
-
-//Load 生命周期函数
-func (actor *RootActor) Load() {
-	//先注册component
-	actor.RegisterComponent()
-	//调用基类的load
-	actor.Actor.Load()
-	//再调用rpc注册
-	actor.RegisterRpc()
-}
-func (actor *RootActor) OnRecv(msg any) {
-	switch v := msg.(type) {
-	case *message2.NatsRequest:
-		wlog.Debug("nats rpc msg")
-		c := g.Root.GetComponent(component.NatsCom).(ifs.INatsComponent)
-		c.Dispatch(v)
-	case *message2.Request: //只有gateway才会收到这种消息
-		wlog.Debug("client rpc msg")
+func (actor *RootActor) OnRecv(message any) {
+	switch msg := message.(type) {
+	case message2.NatsNotify: //请求的回复
+		{
+			sess := msg.ActorRef.Uid
+			c := g.Root.GetComponent(component2.KcpCom).(ifs2.IKcpComponent)
+			conn := c.Get(sess)
+			if conn != nil {
+				a := &message2.Reply{
+					Sn:   msg.Sn,
+					Cmd:  msg.Cmd,
+					Data: msg.Data,
+				}
+				data, err := proto.Marshal(a)
+				if err == nil {
+					wlog.Errorf("[RootActor.OnRecv] proto marshal err:[%v]", err)
+				} else {
+					conn.AsyncWritePacket(network.NewDefaultPacket(data), time.Second)
+				}
+			}
+		}
 	default:
-		wlog.Warnf("unknown msg type:%v", reflect.TypeOf(msg).Name())
+		wlog.Errorf("[RootActor.OnRecv] unknown type:[%v]", reflect.TypeOf(msg).Name())
 	}
 }

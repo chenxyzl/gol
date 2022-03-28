@@ -34,7 +34,8 @@ func NewServer(config *Config, callback ConnCallback, protocol Protocol) *Server
 	}
 }
 
-type ConnectionCreator func(net.Conn, *Server) *Conn
+type IDoConn interface{ Do() }
+type ConnectionCreator func(net.Conn, *Server) IDoConn
 
 // Start starts service
 func (s *Server) Start(listener net.Listener, create ConnectionCreator) {

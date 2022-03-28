@@ -28,7 +28,7 @@ message SC_Pong{}
 //请求玩家所有数据
 message CS_Login {
   string token = 1;
-  uint64 extend = 2;
+  uint64 uid = 2;
 }
 //返回玩家所有数据
 message SC_Login {

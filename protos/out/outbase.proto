@@ -16,3 +16,9 @@ message Reply {//push公用
   bytes  data = 3; //数据
   Code code = 4; //错误码
 }
+
+message Notify {
+  uint32 sn = 1; //流水号
+  uint32 cmd = 2; //rpc的id
+  bytes  data = 3; //数据
+}

@@ -2,7 +2,7 @@ package main
 
 import (
 	"foundation/framework"
-	"foundation/home"
+	"foundation/gate"
 	"github.com/spf13/cobra"
 )
 
@@ -18,5 +18,5 @@ func before(cmd *cobra.Command, args []string) {
 }
 
 func execute(cmd *cobra.Command, args []string) {
-	framework.Run(home.NewActor(1024, 32))
+	framework.Run(gate.NewActor(1024, 1))
 }
