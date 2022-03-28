@@ -19,4 +19,8 @@ type IKcpComponent interface {
 	Stop()
 	Destroy()
 	Get(in uint64) *network.Conn
+
+	OnConnect(conn *network.Conn) bool
+	OnMessage(conn *network.Conn, packet network.Packet) bool
+	OnClose(conn *network.Conn)
 }

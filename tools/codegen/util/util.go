@@ -54,4 +54,3 @@ func ReadLines(path string) ([]string, error) {
 	}
 	return lines, nil
 }
-

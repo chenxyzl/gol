@@ -14,35 +14,32 @@ type Config struct {
 }
 
 type Server struct {
-	config    *Config         // server configuration
-	callback  ConnCallback    // message callbacks in connection
+	Config    *Config         // server configuration
 	protocol  Protocol        // customize packet protocol
 	exitChan  chan struct{}   // notify all goroutines to shutdown
-	waitGroup *sync.WaitGroup // wait for all goroutines
+	WaitGroup *sync.WaitGroup // wait for all goroutines
 	closeOnce sync.Once
 	listener  net.Listener
 }
 
 // NewServer creates a server
-func NewServer(config *Config, callback ConnCallback, protocol Protocol) *Server {
+func NewServer(config *Config, protocol Protocol) *Server {
 	return &Server{
-		config:    config,
-		callback:  callback,
+		Config:    config,
 		protocol:  protocol,
 		exitChan:  make(chan struct{}),
-		waitGroup: &sync.WaitGroup{},
+		WaitGroup: &sync.WaitGroup{},
 	}
 }
 
-type IDoConn interface{ Do() }
-type ConnectionCreator func(net.Conn, *Server) IDoConn
+type ConnectionCreator func(net.Conn, *Server) IConn
 
 // Start starts service
 func (s *Server) Start(listener net.Listener, create ConnectionCreator) {
 	s.listener = listener
-	s.waitGroup.Add(1)
+	s.WaitGroup.Add(1)
 	defer func() {
-		s.waitGroup.Done()
+		s.WaitGroup.Done()
 	}()
 
 	for {
@@ -58,10 +55,10 @@ func (s *Server) Start(listener net.Listener, create ConnectionCreator) {
 			continue
 		}
 
-		s.waitGroup.Add(1)
+		s.WaitGroup.Add(1)
 		go func() {
 			create(conn, s).Do()
-			s.waitGroup.Done()
+			s.WaitGroup.Done()
 		}()
 	}
 }
@@ -73,6 +70,6 @@ func (s *Server) Stop(wait bool) {
 		s.listener.Close()
 	})
 	if wait {
-		s.waitGroup.Wait()
+		s.WaitGroup.Wait()
 	}
 }

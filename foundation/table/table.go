@@ -1,5 +1,5 @@
 package table
 
-func Init()  {
+func Init() {
 
 }

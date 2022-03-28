@@ -6,9 +6,8 @@ import (
 	"foundation/framework/component"
 	"foundation/framework/g"
 	"foundation/framework/network"
-	"foundation/gate/channel"
-	component2 "foundation/gate/component"
-	"foundation/gate/component/ifs"
+	component2 "foundation/gate/global_component"
+	"foundation/gate/global_component/ifs"
 	"foundation/message"
 	"github.com/golang/protobuf/proto"
 	"github.com/xtaci/kcp-go"
@@ -73,7 +72,7 @@ func (c *KcpComponent) Name() component.ComType {
 	return component2.KcpCom
 }
 func (c *KcpComponent) Load() {
-	server, err := network.StartKcpServer(c.addr, c, &network.DefaultProtocol{}, nil, func(conn net.Conn, server *network.Server) network.IDoConn {
+	server, err := network.StartKcpServer(c.addr, &network.DefaultProtocol{}, nil, func(conn net.Conn, server *network.Server) network.IConn {
 		kcpConn := conn.(*kcp.UDPSession)
 		kcpConn.SetNoDelay(1, 10, 2, 1)
 		kcpConn.SetStreamMode(true)
@@ -86,7 +85,7 @@ func (c *KcpComponent) Load() {
 		//kcpConn.SetWriteBuffer(8)
 		kcpConn.SetACKNoDelay(true)
 
-		return channel.NewChannelActor(conn, server)
+		return network.NewDefaultConn(conn, server)
 	})
 	if err != nil {
 		panic(err)
@@ -192,9 +191,7 @@ func (c *KcpComponent) OnMessage(conn *network.Conn, packet network.Packet) bool
 			return false
 		}
 	}
-	//todo 转发给home
-	c.sendToHome(conn, req)
-	return true
+	return c.sendToHome(conn, req)
 }
 
 // OnClose is called when the connection closed

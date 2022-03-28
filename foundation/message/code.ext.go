@@ -21,7 +21,6 @@ func init() {
 	Code_name[int32(Code_ActorNoFound)] = "ActorNoFound"
 	Code_value["ActorNoFound"] = int32(Code_ActorNoFound)
 
-
 	Code_name[int32(Code_NatsRpcError)] = "NatsRpcError"
 	Code_value["NatsRpcError"] = int32(Code_NatsRpcError)
 

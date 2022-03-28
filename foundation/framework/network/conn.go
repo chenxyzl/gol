@@ -9,6 +9,23 @@ import (
 	"time"
 )
 
+// IConn is an interface of methods that are used as callbacks on a connection
+type IConn interface {
+	//Do 启动函数
+	Do()
+
+	// OnConnect is called when the connection was accepted,
+	// If the return value of false is closed
+	OnConnect() bool
+
+	// OnMessage is called when the connection receives a packet,
+	// If the return value of false is closed
+	OnMessage(Packet) bool
+
+	// OnClose is called when the connection closed
+	OnClose()
+}
+
 // Error type
 var (
 	ErrConnClosing   = errors.New("use of closed network connection")
@@ -18,6 +35,7 @@ var (
 
 // Conn exposes a set of callbacks for the various events that occur on a connection
 type Conn struct {
+	IConn
 	srv               *Server
 	conn              net.Conn               // the raw connection
 	extraData         map[string]interface{} // to save extra data
@@ -26,35 +44,17 @@ type Conn struct {
 	closeChan         chan struct{}          // close chanel
 	packetSendChan    chan Packet            // packet send chanel
 	packetReceiveChan chan Packet            // packeet receive chanel
-	callback          ConnCallback           // callback
 	sessionId         uint64
 }
 
-// ConnCallback is an interface of methods that are used as callbacks on a connection
-type ConnCallback interface {
-	// OnConnect is called when the connection was accepted,
-	// If the return value of false is closed
-	OnConnect(*Conn) bool
-
-	// OnMessage is called when the connection receives a packet,
-	// If the return value of false is closed
-	OnMessage(*Conn, Packet) bool
-
-	// OnClose is called when the connection closed
-	OnClose(*Conn)
-}
-
 // newConn returns a wrapper of raw conn
-func NewConn(conn net.Conn, srv *Server) *Conn {
-	return &Conn{
-		srv:               srv,
-		callback:          srv.callback,
-		conn:              conn,
-		closeChan:         make(chan struct{}),
-		packetSendChan:    make(chan Packet, srv.config.PacketSendChanLimit),
-		packetReceiveChan: make(chan Packet, srv.config.PacketReceiveChanLimit),
-		sessionId:         g.UUID.Generate(),
-	}
+func (c *Conn) Constructor(conn net.Conn, srv *Server) {
+	c.srv = srv
+	c.conn = conn
+	c.closeChan = make(chan struct{})
+	c.packetSendChan = make(chan Packet, srv.Config.PacketSendChanLimit)
+	c.packetReceiveChan = make(chan Packet, srv.Config.PacketReceiveChanLimit)
+	c.sessionId = g.UUID.Generate()
 }
 
 // GetExtraData gets the extra data from the Conn
@@ -88,17 +88,13 @@ func (c *Conn) Close() {
 		close(c.packetSendChan)
 		close(c.packetReceiveChan)
 		c.conn.Close()
-		c.callback.OnClose(c)
+		c.OnClose()
 	})
 }
 
 // IsClosed indicates whether or not the connection is closed
 func (c *Conn) IsClosed() bool {
 	return atomic.LoadInt32(&c.closeFlag) == 1
-}
-
-func (c *Conn) SetCallback(callback ConnCallback) {
-	c.callback = callback
 }
 
 // AsyncWritePacket async writes a packet, this method will never block
@@ -138,13 +134,12 @@ func (c *Conn) AsyncWritePacket(p Packet, timeout time.Duration) (err error) {
 
 // Do it
 func (c *Conn) Do() {
-	if !c.callback.OnConnect(c) {
+	if !c.OnConnect() {
 		return
 	}
-
-	asyncDo(c.handleLoop, c.srv.waitGroup)
-	asyncDo(c.readLoop, c.srv.waitGroup)
-	asyncDo(c.writeLoop, c.srv.waitGroup)
+	asyncDo(c.handleLoop, c.srv.WaitGroup)
+	asyncDo(c.readLoop, c.srv.WaitGroup)
+	asyncDo(c.writeLoop, c.srv.WaitGroup)
 }
 
 func (c *Conn) readLoop() {
@@ -164,7 +159,7 @@ func (c *Conn) readLoop() {
 		default:
 		}
 
-		c.conn.SetReadDeadline(time.Now().Add(c.srv.config.ConnReadTimeout))
+		c.conn.SetReadDeadline(time.Now().Add(c.srv.Config.ConnReadTimeout))
 		p, err := c.srv.protocol.ReadPacket(c.conn)
 		if err != nil {
 			return
@@ -192,7 +187,7 @@ func (c *Conn) writeLoop() {
 			if c.IsClosed() {
 				return
 			}
-			c.conn.SetWriteDeadline(time.Now().Add(c.srv.config.ConnWriteTimeout))
+			c.conn.SetWriteDeadline(time.Now().Add(c.srv.Config.ConnWriteTimeout))
 			if _, err := c.conn.Write(p.Serialize()); err != nil {
 				return
 			}
@@ -218,7 +213,7 @@ func (c *Conn) handleLoop() {
 			if c.IsClosed() {
 				return
 			}
-			if !c.callback.OnMessage(c, p) {
+			if !c.OnMessage(p) {
 				c.Close()
 				return
 			}

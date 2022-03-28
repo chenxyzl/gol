@@ -74,16 +74,9 @@ func (actor *Actor) release() {
 	actor.mux.Release(1)
 }
 
-func (actor *Actor) lockGoNum() {
-	actor.goNumLock.Lock()
-}
-
-func (actor *Actor) unlockGoNum() {
-	actor.goNumLock.Unlock()
-}
-
 func (actor *Actor) checkGoNum() {
-	actor.lockGoNum()
+	actor.goNumLock.Lock()
+	defer actor.goNumLock.Unlock()
 	for {
 		//如果已达到上线则切换到别的go程
 		if actor.runningGoNum >= actor.maxRunningGoSize ||
@@ -94,7 +87,6 @@ func (actor *Actor) checkGoNum() {
 			break
 		}
 	}
-	actor.unlockGoNum()
 }
 
 func (actor *Actor) asyncDo(message any) {
