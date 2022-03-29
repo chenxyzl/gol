@@ -1,6 +1,6 @@
 #!/bin/sh
 git status -uno| grep -e modified -e "new file"  > check.txt
-cmd="du -s"
+cmd="du -sk"
 # cat check.txt|while read line;
 while read line
 do
@@ -14,7 +14,7 @@ while read line
 do
 size=`echo $line | awk -F" " '{print $1}'`
 name=`echo $line | awk -F" " '{print $2}'`
-if [ $size -gt 10485760 ]; then
+if [ $size -gt 10240 ]; then
 echo "file:$name too big"
 exit 1
 fi
